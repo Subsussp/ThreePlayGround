@@ -1,0 +1,79 @@
+@import url('https://fonts.googleapis.com/css2?family=Special+Elite&display=swap');
+:root{
+    overflow-x: hidden;
+}
+#panel{
+    z-index: 9999;
+    background-color: #575a5ea2;
+    width: 80px;
+    right: 0;
+    height: 100%;
+    transition: 0.5s ease-in-out;
+    position: absolute;
+    display: flex;
+    overflow: hidden;
+
+}
+.scl{
+    transform: scaleX(0); 
+    transform-origin:top center;
+}
+.scln{
+    transform: scaleX(0);
+    transform-origin:bottom center;
+}
+
+svg,path {
+    transition: all 200ms ease-in-out;
+    pointer-events: none;
+}
+#ObjectsContainer{
+    width: 100%;
+    background-color: #222823;
+    justify-items: center;
+    align-content: flex-start;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    column-gap: normal;  
+    padding-top: 20px;
+    overflow-y:scroll;
+}
+.option{
+    padding: 15px 10px;
+    width: fit-content;
+    transition: all 200ms ease-in-out;
+    display: flex;
+    align-items: center;
+}
+.opop{
+    background-color: #08090A;
+}
+.prototype{
+    /* border-radius: 20px; */
+    background-color: #040404;
+    height: 140px;
+    width: 190px;
+}
+.prototypeContainer{
+    padding: 10px;
+    display: flex;
+    cursor: pointer;
+    flex-direction: column;
+}
+.ll{
+    color: white;
+    font-family: "Special Elite", system-ui;
+    font-weight: 400;
+    padding: 14px 0;
+    font-style: normal;
+}
+#infoPanel{
+    display: flex;
+    flex-direction: column;
+    width: fit-content ;
+    color: white;
+    position: absolute;
+    padding: 40px 20px;
+}
+#field {
+}
