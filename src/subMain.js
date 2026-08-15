@@ -27,8 +27,12 @@ scene.add(light)
 scene.add(mesh)
 const material = new THREE.SpriteMaterial( { map: map, color: 0xffffff } );
 const sprite = new THREE.Sprite( material );
-sprite.scale.set(200, 200, 1)
-scene.add( sprite );
+// sprite.scale.set(200, 200, 1)
+// scene.add( sprite );
+// mesh.rotation.x = Math.PI / 2
+// mesh.scale.setX()
+console.log(mesh.rotation.x);
+
 scene.add(lightHelper)
 scene.add(camera)
 

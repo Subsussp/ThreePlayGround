@@ -1,12 +1,23 @@
 @import url('https://fonts.googleapis.com/css2?family=Special+Elite&display=swap');
 
+@font-face {
+font-family: 'Helvetica';
+font-style: normal;
+font-weight: normal;
+src: url('/Helvetica.woff') format('woff');
+}
 :root{
     overflow-x: hidden;
     --color: red;
+    --main: #08090A;
+    --accent: #575a5ea2;
 }
 *{
     margin: 0;
 }
+/* body{
+    font-family: Helvetica, Arial, sans-serif;
+} */
 #app{
     padding: 0;
     margin: 0;
@@ -16,7 +27,7 @@
 }
 #panel{
     z-index: 9999;
-    background-color: #575a5ea2;
+    background-color: var(--accent);
     width: 45px;
     right: 0;
     height: 100%;
@@ -72,11 +83,119 @@ svg,path {
     background-color: #a7afac;
     z-index: 999999;
 }
+
+.checkbox {
+  appearance: none;
+  width: 13px;
+  height: 13px;
+  background: #3b3b3b;
+  cursor: default;
+  box-sizing: border-box;
+  padding: initial;
+  border: 1px solid #606060;
+  border-radius: 4px;
+  margin: 3px 3px 3px 4px;
+}
+.checkbox:hover {
+  border: 1px solid #929292;
+}
+input[type="checkbox"]:checked {
+  appearance: auto;
+  accent-color: #929292;
+  color: #08f;
+}
+.TextField {
+    background-color: #222;
+    border: 1px solid transparent;
+    color: #888;
+}
+
+#extraInfo{
+    font-family: Helvetica, Arial, sans-serif;
+    color: rgba(255, 255, 255, 0.334);
+    margin-left: 8px;
+    margin-right: 10px;
+}
+input.Number {
+    cursor: ns-resize;
+    background-color: transparent;
+    user-select: none;
+    border: none;
+    outline: none;
+    width: 50px;
+    color: #08f !important;
+    font-size: 12px;
+    border: 0px;
+    padding: 2px;
+}
+input{
+    vertical-align: middle;
+    outline: none;
+    border: none;
+}
+select {
+    appearance: none;
+    outline: none;
+    text-align: center;
+    text-align-last: center;
+    -webkit-appearance: none;
+    border: none;
+    border-radius: 0px;
+    padding: 2px 3px;
+}
+input:not([type="range" i], [type="checkbox" i], [type="radio" i]) {
+    overflow-clip-margin: 0px !important;
+    overflow: clip !important;
+}
+input:focus {
+    outline: none;
+}
+input:active {
+    outline: none;
+}
+.jsonDiv{
+    height: 80%;
+    width: 100%;
+    color: white;
+}
+
+input.Number::selection {
+    outline: none;
+    background-color: transparent;
+    border-color: transparent;
+}
+.panelOpen{
+    display: block!important;
+}
+#panelContainer{
+    height: 100%;
+    background-color: var(--accent) ;
+}
+.Text{
+    cursor: default;
+    display: inline-block;
+    width: 140px;
+    font-size: 14px;
+    color: #858585;
+}
+.Row{
+    display: flex;
+    align-items: center;
+    min-height: 24px;
+    margin-bottom: 10px;
+}
 #objectPanel , #geometryPanel,#materialPanel{
-    
+    height: 100%;
+    display: none;
+    flex-direction: column;
+    /* padding: 5px 10px; */
+    font-family: Helvetica, Arial, sans-serif;
+    padding: 20px 10px 10px 10px;
+    overflow-y: scroll;
+    background-color: var(--main);
 }
 #layersControl{
-    background-color: #08090A;
+    background-color: var(--main);
     width: 100%;
     display: flex;
     /* min-height: 200px; */
@@ -120,6 +239,13 @@ svg,path {
 #layersControl .type.mesh{
     color: rgba(105, 225, 0, 0.757)!important;
 }
+#layersControl .type.geometry{
+    color: rgba(225, 109, 0, 0.757)!important;
+}
+#layersControl .type.material{
+    color: rgba(0, 225, 150, 0.757)!important;
+}
+
 #layersControl .type::after{
     content: '●';
 }
@@ -181,7 +307,7 @@ svg,path {
     padding: 20px 0 ;
 }
 .opop{
-    background-color: #08090A;
+    background-color: var(--main);
 }
 .prototype{
     /* border-radius: 20px; */
@@ -215,18 +341,4 @@ svg,path {
 #field {
 }
 
-/* @media (max-width: 1280px) {
-    #layersControl{
-        min-height: 200px;
-    }
-}
-@media (max-width: 768px) {
-    #layersControl{
-        min-height: 100px;
-    }
-}
-@media (max-width: 600px) {
-    #layersControl{
-        min-height: 20px;
-    }
-} */
+
