@@ -12,18 +12,65 @@ import { PLYLoader } from 'three/addons/loaders/PLYLoader.js';
 import { STLLoader } from 'three/addons/loaders/STLLoader.js';
 import { SVGLoader } from 'three/addons/loaders/SVGLoader.js';
 import { OBJLoader } from 'three/addons/loaders/OBJLoader.js';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+import { BloomPass } from 'three/addons/postprocessing/BloomPass.js';
+import { BokehPass } from 'three/addons/postprocessing/BokehPass.js';
+import { AfterimagePass } from 'three/addons/postprocessing/AfterimagePass.js';
+import { FilmPass } from 'three/addons/postprocessing/FilmPass.js';
+import { SSAOPass } from 'three/addons/postprocessing/SSAOPass.js';
+import { SAOPass } from 'three/addons/postprocessing/SAOPass.js';
+import { GlitchPass } from 'three/addons/postprocessing/GlitchPass.js';
+import { OutlinePass } from 'three/addons/postprocessing/OutlinePass.js';
+import { SMAAPass } from 'three/addons/postprocessing/SMAAPass.js';
+import { HalftonePass } from 'three/addons/postprocessing/HalftonePass.js';
+import { FXAAPass } from 'three/addons/postprocessing/FXAAPass.js';
+import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
+import { RGBShiftShader } from 'three/addons/shaders/RGBShiftShader.js';
+import { VignetteShader } from 'three/addons/shaders/VignetteShader.js';
+import { BrightnessContrastShader } from 'three/addons/shaders/BrightnessContrastShader.js';
+import { HueSaturationShader } from 'three/addons/shaders/HueSaturationShader.js';
+import { SobelOperatorShader } from 'three/addons/shaders/SobelOperatorShader.js';
+import { DotScreenShader } from 'three/addons/shaders/DotScreenShader.js';
+import { SepiaShader } from 'three/addons/shaders/SepiaShader.js';
+import { ColorifyShader } from 'three/addons/shaders/ColorifyShader.js';
+import { TechnicolorShader } from 'three/addons/shaders/TechnicolorShader.js';
+import { BleachBypassShader } from 'three/addons/shaders/BleachBypassShader.js';
+import { KaleidoShader } from 'three/addons/shaders/KaleidoShader.js';
+import { FreiChenShader } from 'three/addons/shaders/FreiChenShader.js';
+import { ColorCorrectionShader } from 'three/addons/shaders/ColorCorrectionShader.js';
+import { GammaCorrectionShader } from 'three/addons/shaders/GammaCorrectionShader.js';
+
+// custom cursor when Dragging
 
 MouseFollower.registerGSAP(gsap);
-
 const cursor = new MouseFollower({
     speed: 0.3,
-});
+  });
 cursor.addState("-fade-out");
-const rayCast = new THREE.Raycaster()
-const map = new THREE.TextureLoader().load("./textures/sprite.jpg");
 
+const rayCast = new THREE.Raycaster()
 let initialMouseXPosition;
 let initialMouseYPosition;
+let layerObjects = [];
+let isDraggingTransformControls = true;
+
+let settingFromLocalstorage = window.localStorage.getItem('setting')
+
+let SCENE_DEFAULT_BACKGROUND_COLOR = new THREE.Color('#333333')
+
+
+let appElement = document.getElementById("app")
+let objectContainer = document.getElementById('ObjectsContainer')
+let mainOption = document.querySelector('[data-type="main"]')
+let panelEle = document.getElementById("panel");
+let infoP = document.getElementById('infoPanel');
+const Grid = document.querySelector("#G")
+const Axes = document.querySelector("#Ax")
+let layerContainer = document.getElementById('layersControl');
+let upload = document.getElementById('upload')
 
 // delete the loaderMap after you finish
 let loaderMap = {
@@ -35,7 +82,6 @@ let loaderMap = {
   ply: PLYLoader,
   svg: SVGLoader,
 }
-let settingFromLocalstorage = window.localStorage.getItem('setting')
 
 let settings =settingFromLocalstorage ? JSON.parse(settingFromLocalstorage) :{
   defaultGeomtriesMaterial: 'MeshBasicMaterial',
@@ -44,9 +90,6 @@ let settings =settingFromLocalstorage ? JSON.parse(settingFromLocalstorage) :{
   showTransformControls: true,
   preview: true 
 }
-let objectContainer = document.getElementById('ObjectsContainer')
-
-
 
 // Set the material to a wireframe standard as a default for the geometries
 
@@ -152,7 +195,209 @@ let materials = {
   //   args:[{ map: map, color: 0xffffff }]
   // }
 }
+const effects = {
 
+    bloom: {
+        name: 'Bloom',
+        create: (renderer, scene, camera) => {
+            return new UnrealBloomPass(
+                new THREE.Vector2(
+                    renderer.domElement.width,
+                    renderer.domElement.height
+                ),
+                1,
+                0.79,
+                0.85
+            );
+        }
+    },
+
+    depthOfField: {
+        name: 'Depth of Field',
+        create: (renderer, scene, camera) => {
+            return new BokehPass(scene, camera, {
+                focus: 4,
+                aperture: 0.0001,
+                maxblur: 0.01
+            });
+        }
+    },
+
+    motionBlur: {
+        name: 'Motion Blur',
+        create: () => {
+            return new AfterimagePass(0.95);
+        }
+    },
+
+    chromaticAberration: {
+        name: 'Chromatic Aberration',
+        create: () => {
+            const pass = new ShaderPass(RGBShiftShader);
+            pass.uniforms.amount.value = 0.02;
+            pass.uniforms.angle.value = 2;
+            return pass;
+        }
+    },
+
+    vignette: {
+        name: 'Vignette',
+        create: () => {
+            const pass = new ShaderPass(VignetteShader);
+            pass.uniforms.darkness.value = 1.9;
+            pass.uniforms.offset.value = 2.0;
+            return pass;
+        }
+    },
+
+    filmGrain: {
+        name: 'Film Grain',
+        create: () => {
+            return new FilmPass(
+                1.0,
+                false
+            );
+        }
+    },
+
+    brightnessContrast: {
+        name: 'Brightness / Contrast',
+        create: () => {
+            const pass = new ShaderPass(BrightnessContrastShader);
+            pass.uniforms.brightness.value = 0.1;
+            pass.uniforms.contrast.value = 0.8;
+            return pass;
+        }
+    },
+
+    hueSaturation: {
+        name: 'Hue / Saturation',
+        create: () => {
+            const pass = new ShaderPass(HueSaturationShader);
+            pass.uniforms.saturation.value = 0.8;
+            setInterval(() => {
+              pass.uniforms.hue.value = 2.0 * Math.random() - 1;
+            }, 200);
+            return pass;
+
+        }
+    },
+
+    ssao: {
+        name: 'SSAO',
+        create: (renderer, scene, camera) => {
+            const pass = new SSAOPass(
+                scene,
+                camera,
+                renderer.domElement.width,
+                renderer.domElement.height
+            );
+
+            pass.kernelRadius = 16;
+            pass.minDistance = 0.005;
+            pass.maxDistance = 0.1;
+
+            return pass;
+        }
+    },
+
+    glitch: {
+        name: 'Glitch',
+        create: () => {
+            const pass = new GlitchPass();
+            pass.goWild = false;
+            return pass;
+        }
+    },
+
+    fxaa: {
+        name: 'FXAA',
+        create: () => {
+            return new FXAAPass();
+        }
+    },
+
+    smaa: {
+        name: 'SMAA',
+        create: (renderer) => {
+            return new SMAAPass(
+                renderer.domElement.width,
+                renderer.domElement.height
+            );
+        }
+    },
+
+    halftone: {
+        name: 'Halftone',
+        create: () => {
+            return new HalftonePass({
+                shape: 1,
+                radius: 0.2,
+                rotateR: Math.PI / 12,
+                rotateG: Math.PI / 12,
+                rotateB: Math.PI / 12,
+                scatter: 1,
+                blending: 1,
+                blendingMode: 1,
+                greyscale: false,
+                disable: false
+            });
+        }
+    },
+
+    dotScreen: {
+        name: 'Dot Screen',
+        create: () => {
+            const pass = new ShaderPass(DotScreenShader);
+            pass.uniforms.scale.value = 1;
+            pass.uniforms.angle.value = 1.57;
+            return pass;
+        }
+    },
+
+    sepia: {
+        name: 'Sepia',
+        create: () => {
+            const pass = new ShaderPass(SepiaShader);
+            pass.uniforms.amount.value = 1;
+            return pass;
+        }
+    },
+
+    colorify: {
+        name: 'Colorify',
+        create: () => {
+            const pass = new ShaderPass(ColorifyShader);
+            pass.uniforms.color.value.set(0xffffff);
+            return pass;
+        }
+    },
+
+    technicolor: {
+        name: 'Technicolor',
+        create: () => {
+            return new ShaderPass(TechnicolorShader);
+        }
+    },
+
+    bleachBypass: {
+        name: 'Bleach Bypass',
+        create: () => {
+            return new ShaderPass(BleachBypassShader);
+        }
+    },
+
+    kaleido: {
+        name: 'Kaleidoscope',
+        create: () => {
+            const pass = new ShaderPass(KaleidoShader);
+            pass.uniforms.sides.value = 6;
+            pass.uniforms.angle.value = 0;
+            return pass;
+        }
+    }
+
+};
 let lights = {
   AmbientLight:{
     args: [ 0x404040 , 10],
@@ -258,8 +503,6 @@ const lightProperties = {
         },
         intensity: {
             type: 'number',
-            min: 0,
-            max: 10,
             step: 0.01
         },
         distance: {
@@ -329,8 +572,6 @@ const lightProperties = {
 
 };
 
-
-
 let cameras = {
   OrthographicCamera:{
 
@@ -340,43 +581,34 @@ let cameras = {
   }
 }
 
-let helpers = {
-}
 let panel = {
   width: 450
 }
 
-let mesh;
-let layerObjects = [];
-let panelEle = document.getElementById("panel");
-let infoP = document.getElementById('infoPanel');
-let isDraggingTransformControls = true;
 
 
 
-const Mainscene = new THREE.Group();
+const mainScene = new THREE.Group();
 let light = new THREE.AmbientLight("white",10)
 let renderer = new THREE.WebGLRenderer({antialias:true})
 let Mainrenderer = new THREE.WebGLRenderer({antialias:true})
+let mainComposer;
 let chosenLayer;
 Mainrenderer.shadowMap.enabled = true;
 
 Mainrenderer.setSize(window.innerWidth,window.innerHeight)
 Mainrenderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-document.getElementById("app").appendChild(Mainrenderer.domElement)
+appElement.appendChild(Mainrenderer.domElement)
 
 
-const MainCamera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
-MainCamera.position.set(2, 3, 20);
-MainCamera.name = 'Camera'
-const controls = new OrbitControls( MainCamera, Mainrenderer.domElement );
+const mainCamera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
+mainCamera.position.set(2, 3, 20);
+mainCamera.name = 'Camera'
+const controls = new OrbitControls( mainCamera, Mainrenderer.domElement );
 controls.zoomSpeed = 2
 
 const AxesHelper = new THREE.AxesHelper(3)
 const GridHelper = new THREE.GridHelper(30,40,0x565656,0x444444)
-
-const Grid = document.querySelector("#G")
-const Axes = document.querySelector("#Ax")
 
 Grid.addEventListener("change",(e)=>{
   window.localStorage.setItem('G',e.target.checked)
@@ -401,17 +633,21 @@ if(window.localStorage.getItem("G") != null){
   GridHelper.visible = false
 }
 let MainRealscene = new THREE.Scene()
-Mainscene.name = 'Scene'
-MainRealscene.background = new THREE.Color('#333333')
-MainRealscene.add(MainCamera)
+mainScene.name = 'Scene'
+MainRealscene.background = SCENE_DEFAULT_BACKGROUND_COLOR
+MainRealscene.add(mainCamera)
 MainRealscene.add(AxesHelper)
 MainRealscene.add(GridHelper)
-MainRealscene.add(Mainscene)
+MainRealscene.add(mainScene)
 
 function animate(){
-  Mainrenderer.render(MainRealscene,MainCamera)
   controls.update()
   requestAnimationFrame(animate)
+  if(mainComposer){
+    mainComposer.render()
+  }else{
+    Mainrenderer.render(MainRealscene,mainCamera)
+  }
 }
 animate()
 
@@ -428,7 +664,22 @@ function toggleFirstAnimation(d){
     d.getElementById('lda').classList.toggle('scln')
 }
 
-async function appendOptionObjects(objects,mode){
+function handleActivation(htmlLayer){
+  removeAllActiveClass()
+  addActiveClass(htmlLayer)
+}
+
+function addActiveClass(htmlLayer){
+  htmlLayer.classList.add('layerActive')
+}
+
+function removeAllActiveClass(){
+  document.querySelectorAll('.layerActive').forEach((e)=>{
+    e.classList.remove('layerActive')
+  })
+}
+
+function appendOptionObjects(objects,mode){
   objectContainer.innerHTML = ``
   for(let i =0;i < objects.length;i++){
     let protoContainer = document.createElement('div');
@@ -455,9 +706,9 @@ async function appendOptionObjects(objects,mode){
         let x = (e.clientX / (window.innerWidth / 2) - 1 )
         let y = -(e.clientY / (window.innerHeight / 2) - 1 )
         if(document.getElementById('optionMenu').getBoundingClientRect().x > e.clientX){
-          rayCast.setFromCamera(new THREE.Vector2(x,y),MainCamera)
+          rayCast.setFromCamera(new THREE.Vector2(x,y),mainCamera)
           let filters = [];
-          Mainscene.traverseVisible((child)=>{
+          mainScene.traverseVisible((child)=>{
             if((child?.type == 'Mesh') && (!child?.isLightHelper && !child.isTransformControlsRoot && !child?.type.includes("Grid") && !child?.type.includes("Axes"))){
               filters.push(child)
             }
@@ -503,21 +754,21 @@ async function appendOptionObjects(objects,mode){
           let geometry = new THREE.SphereGeometry(2,4,2)
           let material = new THREE.MeshBasicMaterial({color: 'white',visible:false})
           let picker = new THREE.Mesh(geometry,material)
+          let target = new THREE.Object3D()
           if(lights[objects[i]]?.hasTarget){
-            console.log(objects[i]);
-            let target = new THREE.Object3D()
             target.isTarget = true
             target.position.set(0,0,0)
             light.target = target
-            Mainscene.add(target);
+            mainScene.add(target);
           }
           if(Object.keys(THREE).includes(objects[i] + "Helper")){
             const lighthelper = new THREE[objects[i] + "Helper"](light,...lights[objects[i]]?.mainHarg);
             lighthelper.isLightHelper = true;
             lighthelper.visible = settings.showHelpers;
-            Mainscene.add(lighthelper);
+            mainScene.add(lighthelper);
             lighthelper.add(picker)
             light.userData.object = lighthelper
+            target.userData.object = lighthelper
             lighthelper.update()
           }
 
@@ -544,7 +795,17 @@ async function appendOptionObjects(objects,mode){
           }
           return
         }  
-          Mainscene.add(obj)
+        if(mode == 'specialEffects'){
+          mainComposer = new EffectComposer(Mainrenderer)
+          let renderPass = new RenderPass(mainScene,mainCamera)
+          mainComposer.addPass( renderPass )
+          let specialEffect = effects[objects[i]].create(Mainrenderer,mainScene,mainCamera)
+          mainComposer.addPass( specialEffect )
+          let outputPass = new OutputPass()
+          mainComposer.addPass( outputPass )
+          return
+        }
+          mainScene.add(obj)
           handleTranformControlsAndBoxHelper(chosenLayer)
           mainInit()
         }
@@ -554,21 +815,21 @@ async function appendOptionObjects(objects,mode){
   }
 }
 
-let TC = new TransformControls(MainCamera,Mainrenderer.domElement)
+let TC = new TransformControls(mainCamera,Mainrenderer.domElement)
 const selectionBox = new THREE.BoxHelper();
 selectionBox.visible = false;
 TC.setMode('translate')
 TC.enabled = true
-Mainscene.add(selectionBox);
-Mainscene.add(TC.getHelper())
+MainRealscene.add(selectionBox);
+mainScene.add(TC.getHelper())
 TC.addEventListener("dragging-changed", (event) => {
   controls.enabled = !event.value;
   updateInfo()    
 })
 let positionMapArr = ['x','y','z']
 TC.addEventListener('change',(e)=>{
-  isDraggingTransformControls = false
-  if(chosenLayer?.isLight && chosenLayer?.userData.object){
+  isDraggingTransformControls = false  
+  if((chosenLayer?.isLight || chosenLayer?.isTarget) && chosenLayer?.userData.object){    
     chosenLayer?.userData.object.update()
   }
   if(TC.mode == "translate"){
@@ -637,9 +898,10 @@ function optionDemo(mode){
   renderer.domElement.style.zIndex = "0";
 
   for (let i = 0; i < prototypes.length; i++) {
+    let mesh;
       const scene = new THREE.Scene();
       const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 1000);
-
+      let effectComposer;
       if(mode == "light"){
         camera.position.set(0, .3,200);
         let lightObj= lights[prototypes[i].dataset.TE]
@@ -674,7 +936,24 @@ function optionDemo(mode){
         }
 
     });
-      }      
+      }   
+      if(mode == "specialEffects"){
+        camera.position.set(0, .3,200);
+        const keyLight = new THREE.DirectionalLight(0xDFF6FF, 3);
+        keyLight.position.set(3, 4, 5);
+        const rimLight = new THREE.PointLight(0xffffff, 5);
+        rimLight.position.set(-3, 2, -3);
+        scene.add(keyLight);
+        scene.add(rimLight);
+        mesh = statue.clone()
+        effectComposer = new EffectComposer(renderer)
+        let renderPass = new RenderPass(scene,camera)
+        effectComposer.addPass( renderPass )
+        let specialEffect = effects[prototypes[i].dataset.TE].create(renderer,scene,camera)
+        effectComposer.addPass( specialEffect )
+        let outputPass = new OutputPass()
+        effectComposer.addPass( outputPass )
+      }   
       scene.add(mesh);
       scene.background = new THREE.Color('black')
       previews.push({
@@ -682,6 +961,7 @@ function optionDemo(mode){
           scene,
           camera,
           mesh,
+          effectComposer
       });
   }
 
@@ -705,14 +985,19 @@ function optionDemo(mode){
           const bottom = window.innerHeight - rect.bottom;
           const width = rect.width;
           const height = rect.height;
-          
+
           renderer.setViewport(left, bottom, width, height);
           renderer.setScissor(left, bottom, width, height);
           
           preview.camera.aspect = width / height;
           preview.camera.updateProjectionMatrix();
           preview.mesh.rotation.y += 0.01;
-          renderer.render(preview.scene, preview.camera);
+          if(preview?.effectComposer){
+            preview.effectComposer.render()
+          }else{
+            renderer.render(preview.scene, preview.camera);
+          }
+      
         }
       }
     }
@@ -723,20 +1008,20 @@ function optionDemo(mode){
       renderer.setSize(window.innerWidth, window.innerHeight);
   });
 }
-let statue = glb.scene
-let gmaterial = new THREE.MeshStandardMaterial({color: 0xffffff, 
-  roughness: 0.2, 
-  metalness: 0,
-  side: THREE.FrontSide
-});
-statue.traverse(child => {
-  if (child.isMesh) {
-    if (child.geometry) {
-      child.geometry.center();;    
-    }
-    child.material = gmaterial
-  }
-});
+
+function createBooleanSelect(){
+  let select = document.createElement('select')
+  let TrueBoolean = document.createElement('option')
+  let FalseBoolean = document.createElement('option')
+  TrueBoolean.innerText = 'true'
+  FalseBoolean.innerText = 'false'
+  TrueBoolean.value = 'true'
+  FalseBoolean.value = 'false'
+  select.append(TrueBoolean)
+  select.append(FalseBoolean)
+  return select
+}
+
 // Init 
 function mainInit(){
   if(chosenLayer){
@@ -786,17 +1071,31 @@ function mainInit(){
     objectContainer.innerHTML = ""
   }
 }
-function createBooleanSelect(){
-  let select = document.createElement('select')
-  let TrueBoolean = document.createElement('option')
-  let FalseBoolean = document.createElement('option')
-  TrueBoolean.innerText = 'true'
-  FalseBoolean.innerText = 'false'
-  TrueBoolean.value = 'true'
-  FalseBoolean.value = 'false'
-  select.append(TrueBoolean)
-  select.append(FalseBoolean)
-  return select
+function geometryInit(){
+  appendOptionObjects(Object.keys(geometries),"geometry")
+  if(settings.preview){
+    optionDemo("geometry")  
+  }
+}
+function materialInit(){
+  appendOptionObjects(Object.keys(materials),"material")
+  if(settings.preview){
+    optionDemo("material")
+  }
+}
+function lightInit(){
+  appendOptionObjects(Object.keys(lights),"light")
+  if(settings.preview){
+    optionDemo("light")
+  }
+}
+function specialEffectsInit(){
+  appendOptionObjects(Object.keys(effects),"specialEffects")
+  if(settings.preview){
+    optionDemo("specialEffects")  
+  }
+}
+function customPresetsInit(){
 }
 function settingInit(){
   let jsonDiv = document.createElement('div')
@@ -840,7 +1139,7 @@ function settingInit(){
   })
   wireframeSelect.addEventListener('change',(event)=>{
     settings.wireframe = event.target.value === "true"
-    Mainscene.traverse((object)=>{
+    mainScene.traverse((object)=>{
         if (!object.material || object?.type.includes("Grid") || object?.type.includes("Axes")) return;
         if (Array.isArray(object.material)) {
             object.material.forEach((material) => {
@@ -858,7 +1157,7 @@ function settingInit(){
   })
   showHelpersSelect.addEventListener('change',(event)=>{
     settings.showHelpers = event.target.value === "true"
-    Mainscene.traverse((object)=>{
+    mainScene.traverse((object)=>{
       if(object?.isLightHelper){
         object.visible = event.target.value === "true"
       }
@@ -894,61 +1193,12 @@ function settingInit(){
   jsonDiv.className = 'jsonDiv'
   objectContainer.append(jsonDiv)
 }
-
-function createCustomText(innerText) {
-  let text = document.createElement('span')
-  text.innerText = innerText
-  text.style.fontWeight = '300'
-  text.style.fontSize = '12px'
-  text.style.fontFamily = "American Typewriter"
-  return text
-}
-function lightInit(){
-  appendOptionObjects(Object.keys(lights),"light")
-  if(settings.preview){
-    optionDemo("light")
-  }
-}
-let mainOption = document.querySelector('[data-type="main"]')
-function materialInit(){
-  appendOptionObjects(Object.keys(materials),"material")
-  if(settings.preview){
-    optionDemo("material")
-  }
+function uploadInit(){
+  upload.click()
+  upload.addEventListener("change",uploadListener)
 }
 
-function geometryInit(){
-  appendOptionObjects(Object.keys(geometries),"geometry")
-  if(settings.preview){
-    optionDemo("geometry")  
-  }
-}
-
-function removeAllActiveClass(){
-  document.querySelectorAll('.layerActive').forEach((e)=>{
-    e.classList.remove('layerActive')
-  })
-}
-
-function addActiveClass(htmlLayer){
-  htmlLayer.classList.add('layerActive')
-}
-
-function handleActivation(htmlLayer){
-  removeAllActiveClass()
-  addActiveClass(htmlLayer)
-}
-
-
-function selectLabel(e){
-  if(!e.target.classList.contains('selected')){
-    document.querySelectorAll('.selected').forEach((e)=>e.classList.remove('selected'))
-    document.querySelectorAll('.panelOpen').forEach((e)=>e.classList.remove('panelOpen'))
-    document.querySelector(`#${e.target.innerText.toLowerCase() + 'Panel'}`).classList.add('panelOpen')
-    e.target.classList.add('selected')
-  }
-
-}
+// Create Functions Section
 
 function createKeyElement(key){
   let keyElement = document.createElement('div')
@@ -967,6 +1217,9 @@ function createNumberInput(number) {
   let numberInput = document.createElement('input')
   numberInput.className = 'Number'
   numberInput.value = number
+  numberInput.addEventListener('keydown',(e)=>{
+    e.stopPropagation()
+  })
   return numberInput
 }
 
@@ -978,26 +1231,13 @@ function createColorInput(color){
   return colorInput
 }
 
-function numberInputValueControl(event,element,offset,min,max,key,Xmulti,Ymulti,fixNum){ 
-  if(key != "rotation"){
-    let newValue = (+element.value + offset * (Xmulti + Ymulti)).toFixed(fixNum !== undefined ? fixNum : 3) 
-    if(Number.isFinite(min) && Number.isFinite(max) ){
-      if(min <= newValue && max >= newValue){
-      element.value = newValue
-    }
-    }else{
-      element.value = newValue
-    }
-  }else{
-    let newValue = (+element.value.replace('°','')+ offset * (Xmulti + Ymulti)).toFixed(fixNum !== undefined ? fixNum : 2) 
-    if(Number.isFinite(min) && Number.isFinite(max) ){
-      if(min <= newValue && max >= newValue){
-        element.value = `${(element.value.replace('°','')+ offset * (Xmulti + Ymulti) ).toFixed(fixNum !== undefined ? fixNum : 2)}°` 
-      }
-    }else{
-      element.value = `${(+element.value.replace('°','')+ offset * (Xmulti + Ymulti) ).toFixed(fixNum !== undefined ? fixNum : 2)}°` 
-    }
-  }
+function createCustomText(innerText) {
+  let text = document.createElement('span')
+  text.innerText = innerText
+  text.style.fontWeight = '300'
+  text.style.fontSize = '12px'
+  text.style.fontFamily = "American Typewriter"
+  return text
 }
 
 function createRowWith3args(object,ObjectArgsValue,parent,key,offset){
@@ -1067,7 +1307,7 @@ function createRowWith3args(object,ObjectArgsValue,parent,key,offset){
   thirdArg.addEventListener('keydown',(e)=>{
     e.stopPropagation()
   })
-  firstArg.addEventListener('change',(e)=>{
+  firstArg.addEventListener('input',(e)=>{
   if(key != "rotation" ){
       object[key]['set'+ 'x'.toUpperCase()](+e.target.value)
     }else{
@@ -1077,7 +1317,7 @@ function createRowWith3args(object,ObjectArgsValue,parent,key,offset){
     }
     selectionBox.update()
   })
-  secondArg.addEventListener('change',(e)=>{
+  secondArg.addEventListener('input',(e)=>{
     if(key != "rotation" ){
       object[key]['set'+ 'y'.toUpperCase()](+e.target.value)
     }else{
@@ -1087,7 +1327,7 @@ function createRowWith3args(object,ObjectArgsValue,parent,key,offset){
     }
     selectionBox.update()
   })
-  thirdArg.addEventListener('change',(e)=>{
+  thirdArg.addEventListener('input',(e)=>{
     if(key != "rotation" ){
       object[key]['set'+ 'z'.toUpperCase()](+e.target.value)
     }else{
@@ -1171,12 +1411,16 @@ function createObjectPanel(object,panelContainer){
         let row = createRow(key)
         let keyElement = createKeyElement(key)
         let number = createNumberInput(object[key].toFixed(3))
+        
         function lightMouseMovementHandler(event){
           let Xmulti = event.clientX - initialMouseXPosition 
           let Ymulti = initialMouseYPosition - event.clientY
           initialMouseXPosition = event.clientX 
           initialMouseYPosition = event.clientY
           numberInputValueControl(event,number,lightProperties[object.type][key].step,lightProperties[object.type][key].min,lightProperties[object.type][key].max,key,Xmulti,Ymulti)
+          changeObjectValue(object,key,number)
+          // IMPORTANT! change the light object values
+
         }
         number.addEventListener('mousedown',(e)=>{
           initialMouseXPosition = e.clientX
@@ -1185,6 +1429,11 @@ function createObjectPanel(object,panelContainer){
           window.addEventListener('mouseup',(e)=>{
             window.removeEventListener('mousemove',lightMouseMovementHandler)
         })})
+
+        number.addEventListener('input',(e)=>{
+            object[key] = +e.target.value
+
+        })
         row.append(keyElement,number)
         panel.appendChild(row)
       }
@@ -1200,6 +1449,7 @@ function createObjectPanel(object,panelContainer){
 
   panelContainer.appendChild(panel)
 }
+
 function createGeometryPanel(object,panelContainer){
   let panel = document.createElement('div')
   panel.id = 'geometryPanel'
@@ -1219,7 +1469,8 @@ function createGeometryPanel(object,panelContainer){
   row.append(keyElement,TextInput)
   panel.appendChild(row)
   let properties = object.geometry.parameters
-  Object.keys(object.geometry.parameters).forEach((key)=>{
+  if(properties){
+  Object.keys(properties).forEach((key)=>{
     let row = createRow(key)
     let keyElement = createKeyElement(key)
     let numberInput = createNumberInput(object.geometry.parameters[key])
@@ -1242,27 +1493,23 @@ function createGeometryPanel(object,panelContainer){
     row.append(keyElement,numberInput)
     panel.appendChild(row)
   })
+  }
+
   panelContainer.appendChild(panel)
 }
+
 function createMaterialPanel(object,panelContainer){
   let panel = document.createElement('div')
   panel.id = 'materialPanel'
   panelContainer.appendChild(panel)
 }
+
 function createRow(key){
   let row = document.createElement('div')
   row.className = `Row ${key}`
   return row
 }
-function changeObjectTransformValueBasedOnMouseDrag(event,valueSymbol,element,object,key){
-  if(key != "rotation" ){
-    object[key]['set'+ valueSymbol.toUpperCase()](+element.value)
-  }else{
-    object[key][valueSymbol] = +(((+(element.value.replace('°','')) / 180 * Math.PI)))
-  }
-  TC.update()  
-  selectionBox.update()
-}
+
 function createCheckBoxInput(object,key){
   let box = document.createElement('input')
   box.className = 'checkbox'
@@ -1273,6 +1520,7 @@ function createCheckBoxInput(object,key){
   })
   return box
 }
+
 function createCheckBoxContainer(object,key,text){
   let container = document.createElement('div')
   let label = document.createElement('span')
@@ -1282,25 +1530,28 @@ function createCheckBoxContainer(object,key,text){
   container.append(box,label)
   return container
 }
+
+
+
+
+
+
+
+
+
 let panel1 = document.createElement('div')
 panel1.id = 'objectPanel'  
-    let panelContainer = document.createElement('div')
-    panelContainer.id = "panelContainer"
+let panelContainer = document.createElement('div')
+panelContainer.id = "panelContainer"
 
-createRowWith3args(Mainscene,[Mainscene.position.x,Mainscene.position.y,Mainscene.position.z],panel1,'position',0.020)
+createRowWith3args(mainScene,[mainScene.position.x,mainScene.position.y,mainScene.position.z],panel1,'position',0.020)
 
 
 panelContainer.appendChild(panel1)
 objectContainer.appendChild(panelContainer)
 
-let upload = document.getElementById('upload')
-function uploadInit(){
-  upload.click()
-  upload.addEventListener("change",uploadListener)
-}
 let fileName;
 function uploadListener(e){
-  // console.log(e)
   for (let i = 0; i < e.target.files.length; i++) {
     const element = e.target.files[i];
     fileName = element.name
@@ -1312,14 +1563,15 @@ function uploadListener(e){
         const loName = loaderMap[extention]
         const NLoader = new loName()        
         let glbObj = NLoader.load(blobUrl,(e)=>{
-          Mainscene.add(e.scene)
+          e.scene.skip = true
+          mainScene.add(e.scene)
         })
         break;
       case 'fbx':
         const lo = loaderMap[extention]
         const fbxLoader = new lo()        
         let fbxObj = fbxLoader.load(blobUrl,(e)=>{
-          Mainscene.add(e.scene)
+          mainScene.add(e.scene)
         })
         break; 
       case 'svg':
@@ -1340,8 +1592,6 @@ function uploadListener(e){
 
 document.querySelectorAll('.option').forEach((a)=> { 
   a.addEventListener('click',(b)=>{
-    // check if the option is selected 
-    // if it was selected when you clicked 
     if(b.target.classList.contains('opop')){
       // then remove the selection from every option and close the panel 
       document.body.querySelectorAll('.opop').forEach((c)=>{
@@ -1355,7 +1605,6 @@ document.querySelectorAll('.option').forEach((a)=> {
       panelEle.style.width = "45px"  
 
     }
-    // if it wasn't selected when you clicked
     else{
       objectContainer.innerHTML = ``
       // then remove selection from every option that is selected 
@@ -1395,8 +1644,11 @@ document.querySelectorAll('.option').forEach((a)=> {
       if(b.target.dataset.type == "material"){
         materialInit()
       }
-      if(b.target.dataset.type == "helper"){
-        
+      if(b.target.dataset.type == "specialEffects"){
+        specialEffectsInit()
+      }
+      if(b.target.dataset.type == "customPresets"){
+        customPresetsInit()
       }
       if(b.target.dataset.type == "setting"){
         objectContainer.classList.remove('grid-layout')
@@ -1404,12 +1656,21 @@ document.querySelectorAll('.option').forEach((a)=> {
       }
 
     }
-
-
 })
 })
 
 // Helping functions
+
+
+function selectLabel(e){
+  if(!e.target.classList.contains('selected')){
+    document.querySelectorAll('.selected').forEach((e)=>e.classList.remove('selected'))
+    document.querySelectorAll('.panelOpen').forEach((e)=>e.classList.remove('panelOpen'))
+    document.querySelector(`#${e.target.innerText.toLowerCase() + 'Panel'}`).classList.add('panelOpen')
+    e.target.classList.add('selected')
+  }
+
+}
 
 function updateInfo(){
   let arr = ["x",'y','z']
@@ -1418,14 +1679,57 @@ function updateInfo(){
     }
 }
 
+function numberInputValueControl(event,element,offset,min,max,key,Xmulti,Ymulti,fixNum){ 
+  if(key != "rotation"){
+    console.log(min,max);
+    
+    let newValue = (+element.value + offset * (Xmulti + Ymulti)).toFixed(fixNum !== undefined ? fixNum : 3) 
+    if(Number.isFinite(min) && Number.isFinite(max) ){
+      if(min <= newValue && max >= newValue){
+      element.value = newValue
+    }
+    }else{
+      element.value = newValue
+    }
+  }else{
+    let newValue = (+element.value.replace('°','')+ offset * (Xmulti + Ymulti)).toFixed(fixNum !== undefined ? fixNum : 2) 
+    if(Number.isFinite(min) && Number.isFinite(max) ){
+      if(min <= newValue && max >= newValue){
+        element.value = `${(element.value.replace('°','')+ offset * (Xmulti + Ymulti) ).toFixed(fixNum !== undefined ? fixNum : 2)}°` 
+      }
+    }else{
+      element.value = `${(+element.value.replace('°','')+ offset * (Xmulti + Ymulti) ).toFixed(fixNum !== undefined ? fixNum : 2)}°` 
+    }
+  }
+}
+
+function changeObjectValue(object,key,element){
+  object[key] = +element.value
+}
+
+function changeObjectTransformValueBasedOnMouseDrag(event,valueSymbol,element,object,key){
+  
+  if((object?.isLight || object?.isTarget) && object?.userData.object){    
+    object?.userData.object.update()
+  }
+  if(key != "rotation" ){
+    object[key]['set'+ valueSymbol.toUpperCase()](+element.value)
+  }else{
+    object[key][valueSymbol] = +(((+(element.value.replace('°','')) / 180 * Math.PI)))
+  }
+  object.updateMatrixWorld(true);
+  selectionBox.update()
+  TC.update()  
+}
+
 // Event Listeners
 window.addEventListener("mouseup",(e)=>{
   if(isDraggingTransformControls && document.getElementById('optionMenu').getBoundingClientRect().x > e.clientX){
     let x = (e.clientX / (window.innerWidth / 2) - 1 )
     let y = -(e.clientY / (window.innerHeight / 2) - 1 )
-    rayCast.setFromCamera(new THREE.Vector2(x,y),MainCamera)
+    rayCast.setFromCamera(new THREE.Vector2(x,y),mainCamera)
     let filters = [];
-    Mainscene.traverseVisible((child)=>{
+    mainScene.traverseVisible((child)=>{
       if((child.type == 'Mesh' || child?.isLight || child.name == 'picker') && (!child?.isLightHelper && !child.isTransformControlsRoot && !child?.type.includes("Grid") && !child?.type.includes("Axes"))){
         filters.push(child)
       }
@@ -1451,8 +1755,8 @@ window.addEventListener("mouseup",(e)=>{
 })
 
 window.addEventListener("resize", () => {
-  MainCamera.aspect = window.innerWidth / window.innerHeight;
-  MainCamera.updateProjectionMatrix();
+  mainCamera.aspect = window.innerWidth / window.innerHeight;
+  mainCamera.updateProjectionMatrix();
 
   Mainrenderer.setSize(window.innerWidth, window.innerHeight);
   Mainrenderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -1466,38 +1770,89 @@ window.addEventListener("mousemove",(e)=>{
   isDraggingTransformControls = false
 })
 
-let layerContainer = document.getElementById('layersControl');
+window.addEventListener('keydown',(e)=>{
+  if(e.keyCode == 8){
+    if(chosenLayer && chosenLayer.uuid !== mainScene.uuid && chosenLayer.uuid !== mainCamera.uuid ){
+      TC.detach()
+      hideTransformAndSelectionBox()
+      layerContainer.querySelector(`[data-uuid="${chosenLayer.uuid}"]`).remove()
+      if(chosenLayer?.isLight){
+        chosenLayer.userData?.object && chosenLayer.userData.object.removeFromParent()
+        if(chosenLayer.target){
+          layerContainer.querySelector(`[data-uuid="${chosenLayer.target.uuid}"]`).remove()
+          chosenLayer.target.removeFromParent()
+        }
+      } 
+      chosenLayer.removeFromParent() 
+      chosenLayer = null
+      mainInit()
+    }
+  }
+  if(e.key.toLocaleLowerCase() == 't'){
+    TC.setMode('translate')
+  }
+  if(e.key.toLocaleLowerCase() == 'r'){
+    TC.setMode('rotate')
+  }
+  if(e.key.toLocaleLowerCase() == 's'){
+    TC.setMode('scale')
+  }
+})
 
-appendLayer(MainCamera,layerContainer,'type camera',false,
+mainScene.addEventListener("childadded",updateLayers)
+
+appendLayer(mainCamera,layerContainer,'type camera',false,
 )
-appendLayer(Mainscene,layerContainer,'type scene',false,)
+appendLayer(mainScene,layerContainer,'type scene',false,)
 
-Mainscene.addEventListener("childadded",updateLayers)
 
 // Export Code 
-
+let code;
 document.getElementById('export-code').addEventListener('click',(event)=>{
-  let code = ``
   document.getElementById('language-jsContain').hidden = false
-  Mainscene.children.forEach((child)=>{
-    console.log(child);
-    console.log(child.constructor.name);
-    if(child.constructor.name && Object.hasOwn(THREE,child.constructor.name)){
-      code += `let ${child.constructor.name} = new THREE.${child.constructor.name}()\n`
-    }
-  })
+  mainScene.children.forEach(handleExport)
   let codeExportElement = document.getElementById('language-js')
   codeExportElement.textContent = code
   Prism.highlightElement(codeExportElement);
 })
-// console.log(code);
+function handleExport(child) {
+  code = ``
+   if(child.constructor.name && Object.hasOwn(THREE,child.constructor.name)){
+      if(child.isGroup){
+        code += `let group = new THREE.group()\n`
+        child.children.forEach((groupChild)=>handleExport(groupChild))
+        return
+      }
+      console.log(child);
+      
+      let params = Object.values(child?.geometry.parameters)
+      if(child?.geometry){
+        code += `let ${child.geometry} = new THREE.${child.geometry.constructor.name}(${params ? params.join(',') : ''})\n`
+      }
+      code += `let ${child.constructor.name} = new THREE.${child.constructor.name}()\n`
+    
+    }
+}
 
+function handleImportedSceneExport(){
+
+}
+
+function handleMeshExport(){
+  
+}
+
+function getConstructorParamters(object){
+  let source = object.toString()
+  let match = source.match(/this\.parameters\s*=\s*\{([\s\S]*?)\}/)
+  return match[1].split(',').map(param => param.trim())
+}
 // End of Export Code 
 
 function updateLayers(e){
   layerFiltering(e.child)
 }
-window.scene = Mainscene
+window.scene = mainScene
 function layerFiltering(e){
     if(!e?.isCamera && !e?.isLightHelper && !e?.controls && !e?.type.includes("Grid") && !e?.type.includes("Axes")){
       if(!layerObjects.includes(e.uuid)){
@@ -1535,19 +1890,20 @@ function appendLayer(object,parent,markC,opener){
     ${object?.material !== undefined ? '<span class="type material"></span>' : ''}
 `
   layer.addEventListener('click',(e)=>{
-    if(Mainscene.uuid == object.uuid){
-      chosenLayer = Mainscene
+    if(mainScene.uuid == object.uuid){
+      chosenLayer = mainScene
     }
-    else if(MainCamera.uuid == object.uuid){
-      chosenLayer = MainCamera
+    else if(mainCamera.uuid == object.uuid){
+      chosenLayer = mainCamera
     }else{
-      chosenLayer = Mainscene.getObjectByProperty("uuid",object.uuid)
+      chosenLayer = mainScene.getObjectByProperty("uuid",object.uuid)
       handleTranformControlsAndBoxHelper(chosenLayer)
     }
     mainInit()
   })
   parent.appendChild(layer)
 }
+
 function handleTranformControlsAndBoxHelper(obj){
   hideTransformAndSelectionBox()  
   if(obj?.isLight){
@@ -1558,31 +1914,11 @@ function handleTranformControlsAndBoxHelper(obj){
   }
 }
 
-window.addEventListener('keydown',(e)=>{
-  if(e.keyCode == 8){
-    if(chosenLayer && chosenLayer.uuid !== Mainscene.uuid && chosenLayer.uuid !== MainCamera.uuid ){
-      TC.detach()
-      hideTransformAndSelectionBox()
-      layerContainer.querySelector(`[data-uuid="${chosenLayer.uuid}"]`).remove()
-      if(chosenLayer?.isLight){
-        chosenLayer.userData?.object && chosenLayer.userData.object.removeFromParent()
-        if(chosenLayer.target){
-          layerContainer.querySelector(`[data-uuid="${chosenLayer.target.uuid}"]`).remove()
-          chosenLayer.target.removeFromParent()
-        }
-      } 
-      chosenLayer.removeFromParent() 
-      chosenLayer = null
-      mainInit()
-    }
-  }
-  if(e.key.toLocaleLowerCase() == 't'){
-    TC.setMode('translate')
-  }
-  if(e.key.toLocaleLowerCase() == 'r'){
-    TC.setMode('rotate')
-  }
-  if(e.key.toLocaleLowerCase() == 's'){
-    TC.setMode('scale')
-  }
-})
+// save scene status and load it 
+
+let pasr = mainScene.toJSON()
+pasr.backgroundColor = 'blaczk'
+pasr.arbb = 'blaczkasdf'
+let laoder = new THREE.ObjectLoader()
+let kadf = laoder.parse(mainScene.toJSON())
+

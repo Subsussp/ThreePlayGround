@@ -292,6 +292,18 @@ input.Number::selection {
 #compProps{
     width: 70%;
 }
+.sceneSettings{
+    display: flex;
+    width: 100%;
+    height: 30%;
+    background-color: #08f;
+    flex-direction: column;
+    justify-content: space-evenly;
+}
+.tabs{
+    padding: 5px 20px;
+    display: flex;
+}
 #language-jsContain{
     position: absolute;
     top: 50%;
