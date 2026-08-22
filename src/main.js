@@ -2077,7 +2077,7 @@ createSceneSettings()
       }   
       else {
         select.addEventListener('change',(event)=>{
-          settings.openPanelOnChange = event.target.value === "true"
+          settings[key] = event.target.value === "true"
           saveSettingState()
         })
       }

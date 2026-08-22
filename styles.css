@@ -254,7 +254,6 @@ input.Number::selection {
     background-color: var(--main);
     width: 100%;
     display: flex;
-    /* min-height: 200px; */
     justify-items: center;
     flex-direction: column;
     overflow-y: scroll;
@@ -350,6 +349,8 @@ input.Number::selection {
     background-color: #131613;
     display: flex;
     padding: 10px;
+    min-height: 160px;
+
     z-index: 999;
 }
 
