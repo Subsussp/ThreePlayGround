@@ -6,6 +6,7 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { TransformControls } from "three/addons/controls/TransformControls.js";
 import MouseFollower from "mouse-follower";
 import gsap from "gsap";
+import "@fortawesome/fontawesome-free/css/all.min.css";
 import "mouse-follower/dist/mouse-follower.min.css";
 import { FBXLoader } from 'three/addons/loaders/FBXLoader.js';
 import { PLYLoader } from 'three/addons/loaders/PLYLoader.js';
@@ -43,7 +44,7 @@ import { FreiChenShader } from 'three/addons/shaders/FreiChenShader.js';
 import { ColorCorrectionShader } from 'three/addons/shaders/ColorCorrectionShader.js';
 import { GammaCorrectionShader } from 'three/addons/shaders/GammaCorrectionShader.js';
 import { VertexNormalsHelper } from 'three/addons/helpers/VertexNormalsHelper.js';
-
+import Sortable from "sortablejs";
 // custom cursor when Dragging
 
 MouseFollower.registerGSAP(gsap);
@@ -133,7 +134,7 @@ async function createEditor(mainscene,initialization,rawObject){
   let mainComposer;
   let fileName;
   let functionAfterPhotoUpload;
-  let effectName;
+  let effectsNames = [];
   let chosenLayer;
   let mainScene;
   let MainRealscene;
@@ -1713,7 +1714,7 @@ async function createEditor(mainscene,initialization,rawObject){
             mainComposer.addPass( renderPass )
             
             let specialEffect = effects[objects[i]].create(mainRenderer,mainScene,mainCamera)
-            effectName = objects[i]
+            effectsNames.push(objects[i])
             mainComposer.addPass( specialEffect )
             
             let outputPass = new OutputPass()
@@ -1971,6 +1972,50 @@ createSceneSettings()
         label.addEventListener("click",selectLabel)
         createMaterialPanel(chosenLayer,panelContainer)
         meshComponentContainer.appendChild(label)
+      }
+      if(rawObject?.effectsNames || mainComposer){
+        let label = document.createElement('div')
+        label.classList.add('vertwr')
+        label.innerHTML ='Effects'
+        label.addEventListener("click",selectLabel)
+        meshComponentContainer.appendChild(label)
+        let effectStack = document.createElement('div')
+        effectStack.id = 'effectsPanel'
+        rawObject.effectsNames.forEach((effectName)=>{
+          let effect = document.createElement('div')
+          let effectSpan = document.createElement('span')
+          effect.className = 'effect'
+          effectSpan.innerHTML = effectName
+          effectSpan.dataset.effect = effectName
+          effect.innerHTML = `<i class="far fa-arrows-alt handle"></i>` + effectSpan.outerHTML
+          
+          effectStack.append(effect)
+        })
+        new Sortable(effectStack, {
+          animation: 150,
+          handle: '.handle',
+          onEnd: () => {
+              updateComposerOrder();
+          }
+});
+      function updateComposerOrder() {
+    const order = [...effectStack.children]
+        .map(el => el.children[1].dataset.effect);
+
+    const renderPass = new RenderPass(mainScene, mainCamera);
+
+    mainComposer.passes = [renderPass];
+
+    for (const effect of order) {
+        const effectPass = effects[effect].create(
+            mainRenderer,
+            mainScene,
+            mainCamera
+        );
+        mainComposer.passes.push(effectPass);
+    }
+}
+      panelContainer.appendChild(effectStack)
       }
 
       objectContainer.innerHTML = ""
@@ -2621,7 +2666,7 @@ createSceneSettings()
     else{
       pasr.chosenLayer = undefined
     }
-    if(effectName)pasr.effectName = effectName;
+    if(effectsNames)pasr.effectsNames = effectsNames;
     const tx = db.transaction("states", "readwrite");
     const store = tx.objectStore("states");     
     const putRequest = store.put(pasr,0);
@@ -2868,13 +2913,18 @@ createSceneSettings()
 
     mainCamera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
     if(rawObject){    
-      if(rawObject.effectName !== undefined){
+      if(rawObject.effectsNames !== undefined){
           mainComposer = new EffectComposer(mainRenderer)
           let renderPass = new RenderPass(mainScene,mainCamera)
           mainComposer.addPass( renderPass )    
-          // handle effects parameters here 
-          let specialEffect = effects[rawObject.effectName].create(mainRenderer,mainScene,mainCamera)
-          mainComposer.addPass( specialEffect )
+          // handle effects parameters here  
+          console.log(rawObject.effectsNames);
+                   
+          effectsNames = rawObject.effectsNames
+          rawObject.effectsNames.forEach((effect)=>{
+            let specialEffect = effects[effect].create(mainRenderer,mainScene,mainCamera)
+            mainComposer.addPass( specialEffect )
+          })
           
           let outputPass = new OutputPass()
           mainComposer.addPass( outputPass )
@@ -2967,8 +3017,8 @@ createSceneSettings()
         let ob = mainScene.getObjectByProperty('uuid', chosenLayer.userData.object);
         if(ob?.update)ob.update()
       }
+    if(chosenLayer){
       if(TC.mode == "translate"){
-        if(chosenLayer){
           updateInfo()    
           document.querySelectorAll('.position input').forEach((e,i)=>{
             let positionValue = +chosenLayer.position[positionMapArr[i]]
@@ -2977,14 +3027,20 @@ createSceneSettings()
             }
           })
         }
-        }
       if(TC.mode == "rotate"){document.querySelectorAll('.rotation input').forEach((e,i)=>{
         let rotationValue = +chosenLayer.rotation[positionMapArr[i]]
         if(!Number.isNaN(rotationValue)){
           e.value = (+(rotationValue).toFixed(3) * 180 / Math.PI).toFixed(3)
         }
       })}
-      if(TC.mode == "scale"){document.querySelector('.scale')[0]}
+      if(TC.mode == "scale"){
+        document.querySelectorAll('.scale input').forEach((e,i)=>{
+          let scaleValue = +chosenLayer.scale[positionMapArr[i]]
+          if(!Number.isNaN(scaleValue)){
+          e.value = (scaleValue).toFixed(3)
+        }})
+        }
+      }
       selectionBox.update()
 
     })
@@ -3261,7 +3317,7 @@ createSceneSettings()
 }
 function disposeEverything() {
   mainComposer = null
-  effectName = null
+  effectsNames = null
   chosenLayer = null
   document.getElementById('panelContainer') && document.getElementById('panelContainer').remove()
   hideTransformAndSelectionBox()  

@@ -12,8 +12,10 @@
     "vite": "^8.1.1"
   },
   "dependencies": {
+    "@fortawesome/fontawesome-free": "^7.3.1",
     "gsap": "^3.15.0",
     "mouse-follower": "^1.1.2",
+    "sortablejs": "^1.15.7",
     "three": "^0.185.1"
   }
 }
