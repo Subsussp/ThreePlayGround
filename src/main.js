@@ -144,7 +144,8 @@ async function createEditor(mainscene,initialization,rawObject){
   let TC;
   let selectionBox;
   let renderer = new THREE.WebGLRenderer({antialias:true})
-
+  const spriteTexture =new THREE.TextureLoader().load("textures/sprite.jpg");
+  
   newbutton.addEventListener('click',(e)=>{
     disposeEverything()
     saveSceneState()
@@ -228,18 +229,6 @@ async function createEditor(mainscene,initialization,rawObject){
     },
   }
   let materials = {
-    LineBasicMaterial:{
-      args:[{ color: 0xffffff }]
-    },
-    LineDashedMaterial:{
-      args:[ {
-    color: 0xffffff,
-    scale: 1,
-    dashSize: 3,
-    gapSize: 1,
-  } ]
-
-    },
     MeshBasicMaterial:{
       args:[{color:'white',visible:true}]
     },
@@ -266,13 +255,675 @@ async function createEditor(mainscene,initialization,rawObject){
     PointsMaterial:{
       args:[]
     },
-    // ShadowMaterial:{
-    //   args:[]
-    // },
-    // SpriteMaterial:{
-    //   args:[{ map: map, color: 0xffffff }]
-    // }
+    ShadowMaterial:{
+      args:[]
+    },
+    SpriteMaterial:{
+      args:[{ transparent: true, map:spriteTexture }],
+      Sprite:true
+    },
+    PointsMaterial:{
+      args:[{
+  color: 0x00ff00,
+  size: 20,
+  sizeAttenuation: false,
+}],
+      Points:true
+    },
+     LineBasicMaterial:{
+      args:[{ color: 0xffffff }],
+      Line:true
+    },
+    LineDashedMaterial:{
+      args:[ {
+        color: 0xffffff,
+        scale: 1,
+        dashSize: .1,
+        gapSize: .3,
+
+  } ],
+      Line:true
+    },
   }
+ const materialProperties = {
+
+  MeshBasicMaterial: {
+    color: { type: "color", value: 0xffffff },
+    opacity: { type: "number", value: 1 },
+    transparent: { type: "boolean", value: false },
+    alphaHash: { type: "boolean", value: false },
+    alphaTest: { type: "number", value: 0 },
+
+    depthTest: { type: "boolean", value: true },
+    depthWrite: { type: "boolean", value: true },
+
+    side: {
+      type: "select",
+      value: THREE.FrontSide,
+      options: {
+        FrontSide: THREE.FrontSide,
+        BackSide: THREE.BackSide,
+        DoubleSide: THREE.DoubleSide
+      }
+    },
+
+    vertexColors: { type: "boolean", value: false },
+    wireframe: { type: "boolean", value: false },
+    wireframeLinewidth: { type: "number", value: 1 },
+    fog: { type: "boolean", value: true },
+
+    map: { type: "texture", value: null },
+    alphaMap: { type: "texture", value: null },
+    aoMap: { type: "texture", value: null },
+    lightMap: { type: "texture", value: null },
+
+    toneMapped: { type: "boolean", value: true }
+  },
+
+
+  MeshLambertMaterial: {
+    color: { type: "color", value: 0xffffff },
+
+    emissive: { type: "color", value: 0x000000 },
+    emissiveIntensity: { type: "number", value: 1 },
+
+    opacity: { type: "number", value: 1 },
+    transparent: { type: "boolean", value: false },
+    alphaHash: { type: "boolean", value: false },
+    alphaTest: { type: "number", value: 0 },
+
+    depthTest: { type: "boolean", value: true },
+    depthWrite: { type: "boolean", value: true },
+
+    side: {
+      type: "select",
+      value: THREE.FrontSide,
+      options: {
+        FrontSide: THREE.FrontSide,
+        BackSide: THREE.BackSide,
+        DoubleSide: THREE.DoubleSide
+      }
+    },
+
+    vertexColors: { type: "boolean", value: false },
+    wireframe: { type: "boolean", value: false },
+    wireframeLinewidth: { type: "number", value: 1 },
+    fog: { type: "boolean", value: true },
+
+    map: { type: "texture", value: null },
+    alphaMap: { type: "texture", value: null },
+    aoMap: { type: "texture", value: null },
+    lightMap: { type: "texture", value: null },
+    emissiveMap: { type: "texture", value: null },
+
+    toneMapped: { type: "boolean", value: true }
+  },
+
+
+  MeshPhongMaterial: {
+    color: { type: "color", value: 0xffffff },
+
+    specular: { type: "color", value: 0x111111 },
+    shininess: { type: "number", value: 30 },
+
+    emissive: { type: "color", value: 0x000000 },
+    emissiveIntensity: { type: "number", value: 1 },
+
+    opacity: { type: "number", value: 1 },
+    transparent: { type: "boolean", value: false },
+    alphaHash: { type: "boolean", value: false },
+    alphaTest: { type: "number", value: 0 },
+
+    depthTest: { type: "boolean", value: true },
+    depthWrite: { type: "boolean", value: true },
+
+    side: {
+      type: "select",
+      value: THREE.FrontSide,
+      options: {
+        FrontSide: THREE.FrontSide,
+        BackSide: THREE.BackSide,
+        DoubleSide: THREE.DoubleSide
+      }
+    },
+
+    vertexColors: { type: "boolean", value: false },
+    wireframe: { type: "boolean", value: false },
+    wireframeLinewidth: { type: "number", value: 1 },
+    fog: { type: "boolean", value: true },
+
+    map: { type: "texture", value: null },
+    alphaMap: { type: "texture", value: null },
+    aoMap: { type: "texture", value: null },
+    lightMap: { type: "texture", value: null },
+    emissiveMap: { type: "texture", value: null },
+
+    bumpMap: { type: "texture", value: null },
+    bumpScale: { type: "number", value: 1 },
+
+    normalMap: { type: "texture", value: null },
+    normalScale: {
+      type: "vector2",
+      value: new THREE.Vector2(1, 1)
+    },
+
+    displacementMap: { type: "texture", value: null },
+    displacementScale: { type: "number", value: 0 },
+    displacementBias: { type: "number", value: 0 },
+
+    specularMap: { type: "texture", value: null },
+
+    flatShading: { type: "boolean", value: false },
+
+    toneMapped: { type: "boolean", value: true }
+  },
+
+
+  MeshToonMaterial: {
+    color: { type: "color", value: 0xffffff },
+
+    emissive: { type: "color", value: 0x000000 },
+    emissiveIntensity: { type: "number", value: 1 },
+
+    opacity: { type: "number", value: 1 },
+    transparent: { type: "boolean", value: false },
+    alphaHash: { type: "boolean", value: false },
+    alphaTest: { type: "number", value: 0 },
+
+    depthTest: { type: "boolean", value: true },
+    depthWrite: { type: "boolean", value: true },
+
+    side: {
+      type: "select",
+      value: THREE.FrontSide,
+      options: {
+        FrontSide: THREE.FrontSide,
+        BackSide: THREE.BackSide,
+        DoubleSide: THREE.DoubleSide
+      }
+    },
+
+    vertexColors: { type: "boolean", value: false },
+    wireframe: { type: "boolean", value: false },
+    wireframeLinewidth: { type: "number", value: 1 },
+    fog: { type: "boolean", value: true },
+
+    map: { type: "texture", value: null },
+    alphaMap: { type: "texture", value: null },
+    aoMap: { type: "texture", value: null },
+    lightMap: { type: "texture", value: null },
+    emissiveMap: { type: "texture", value: null },
+
+    bumpMap: { type: "texture", value: null },
+    bumpScale: { type: "number", value: 1 },
+
+    normalMap: { type: "texture", value: null },
+    normalScale: {
+      type: "vector2",
+      value: new THREE.Vector2(1, 1)
+    },
+
+    displacementMap: { type: "texture", value: null },
+    displacementScale: { type: "number", value: 0 },
+    displacementBias: { type: "number", value: 0 },
+
+    gradientMap: { type: "texture", value: null },
+
+    flatShading: { type: "boolean", value: false },
+
+    toneMapped: { type: "boolean", value: true }
+  },
+
+
+  MeshStandardMaterial: {
+    color: { type: "color", value: 0xffffff },
+
+    roughness: { type: "number", value: 1 },
+    metalness: { type: "number", value: 0 },
+
+    emissive: { type: "color", value: 0x000000 },
+    emissiveIntensity: { type: "number", value: 1 },
+
+    opacity: { type: "number", value: 1 },
+    transparent: { type: "boolean", value: false },
+    alphaHash: { type: "boolean", value: false },
+    alphaTest: { type: "number", value: 0 },
+
+    depthTest: { type: "boolean", value: true },
+    depthWrite: { type: "boolean", value: true },
+
+    side: {
+      type: "select",
+      value: THREE.FrontSide,
+      options: {
+        FrontSide: THREE.FrontSide,
+        BackSide: THREE.BackSide,
+        DoubleSide: THREE.DoubleSide
+      }
+    },
+
+    vertexColors: { type: "boolean", value: false },
+    wireframe: { type: "boolean", value: false },
+    wireframeLinewidth: { type: "number", value: 1 },
+    fog: { type: "boolean", value: true },
+
+    map: { type: "texture", value: null },
+    alphaMap: { type: "texture", value: null },
+    aoMap: { type: "texture", value: null },
+    lightMap: { type: "texture", value: null },
+    emissiveMap: { type: "texture", value: null },
+
+    bumpMap: { type: "texture", value: null },
+    bumpScale: { type: "number", value: 1 },
+
+    normalMap: { type: "texture", value: null },
+    normalScale: {
+      type: "vector2",
+      value: new THREE.Vector2(1, 1)
+    },
+
+    displacementMap: { type: "texture", value: null },
+    displacementScale: { type: "number", value: 0 },
+    displacementBias: { type: "number", value: 0 },
+
+    metalnessMap: { type: "texture", value: null },
+    roughnessMap: { type: "texture", value: null },
+
+    envMap: { type: "texture", value: null },
+    envMapIntensity: { type: "number", value: 1 },
+
+    flatShading: { type: "boolean", value: false },
+
+    toneMapped: { type: "boolean", value: true }
+  },
+
+
+  MeshPhysicalMaterial: {
+    color: { type: "color", value: 0xffffff },
+
+    roughness: { type: "number", value: 0.5 },
+    metalness: { type: "number", value: 0 },
+
+    emissive: { type: "color", value: 0x000000 },
+    emissiveIntensity: { type: "number", value: 1 },
+
+    opacity: { type: "number", value: 1 },
+    transparent: { type: "boolean", value: false },
+    alphaHash: { type: "boolean", value: false },
+    alphaTest: { type: "number", value: 0 },
+
+    depthTest: { type: "boolean", value: true },
+    depthWrite: { type: "boolean", value: true },
+
+    side: {
+      type: "select",
+      value: THREE.FrontSide,
+      options: {
+        FrontSide: THREE.FrontSide,
+        BackSide: THREE.BackSide,
+        DoubleSide: THREE.DoubleSide
+      }
+    },
+
+    vertexColors: { type: "boolean", value: false },
+    wireframe: { type: "boolean", value: false },
+    wireframeLinewidth: { type: "number", value: 1 },
+    fog: { type: "boolean", value: true },
+
+    map: { type: "texture", value: null },
+    alphaMap: { type: "texture", value: null },
+    aoMap: { type: "texture", value: null },
+    lightMap: { type: "texture", value: null },
+    emissiveMap: { type: "texture", value: null },
+
+    bumpMap: { type: "texture", value: null },
+    bumpScale: { type: "number", value: 1 },
+
+    normalMap: { type: "texture", value: null },
+    normalScale: {
+      type: "vector2",
+      value: new THREE.Vector2(1, 1)
+    },
+
+    displacementMap: { type: "texture", value: null },
+    displacementScale: { type: "number", value: 0 },
+    displacementBias: { type: "number", value: 0 },
+
+    metalnessMap: { type: "texture", value: null },
+    roughnessMap: { type: "texture", value: null },
+
+    envMap: { type: "texture", value: null },
+    envMapIntensity: { type: "number", value: 1 },
+
+    clearcoat: { type: "number", value: 0 },
+    clearcoatRoughness: { type: "number", value: 0 },
+
+    clearcoatMap: { type: "texture", value: null },
+    clearcoatRoughnessMap: { type: "texture", value: null },
+
+    clearcoatNormalMap: { type: "texture", value: null },
+    clearcoatNormalScale: {
+      type: "vector2",
+      value: new THREE.Vector2(1, 1)
+    },
+
+    ior: { type: "number", value: 1.5 },
+
+    specularIntensity: { type: "number", value: 1 },
+    specularColor: { type: "color", value: 0xffffff },
+
+    specularIntensityMap: { type: "texture", value: null },
+    specularColorMap: { type: "texture", value: null },
+
+    iridescence: { type: "number", value: 0 },
+    iridescenceIOR: { type: "number", value: 1.3 },
+    iridescenceThicknessRange: {
+      type: "vector2",
+      value: new THREE.Vector2(100, 400)
+    },
+
+    iridescenceMap: { type: "texture", value: null },
+    iridescenceThicknessMap: { type: "texture", value: null },
+
+    sheen: { type: "number", value: 0 },
+    sheenColor: { type: "color", value: 0x000000 },
+    sheenRoughness: { type: "number", value: 1 },
+
+    sheenColorMap: { type: "texture", value: null },
+    sheenRoughnessMap: { type: "texture", value: null },
+
+    transmission: { type: "number", value: 0 },
+    transmissionMap: { type: "texture", value: null },
+
+    thickness: { type: "number", value: 0 },
+    thicknessMap: { type: "texture", value: null },
+
+    attenuationDistance: { type: "number", value: Infinity },
+    attenuationColor: { type: "color", value: 0xffffff },
+
+    anisotropy: { type: "number", value: 0 },
+    anisotropyRotation: { type: "number", value: 1 },
+    anisotropyMap: { type: "texture", value: null },
+
+    flatShading: { type: "boolean", value: false },
+
+    toneMapped: { type: "boolean", value: true }
+  },
+
+
+  MeshNormalMaterial: {
+    opacity: { type: "number", value: 1 },
+    transparent: { type: "boolean", value: false },
+    alphaHash: { type: "boolean", value: false },
+    alphaTest: { type: "number", value: 0 },
+
+    depthTest: { type: "boolean", value: true },
+    depthWrite: { type: "boolean", value: true },
+
+    side: {
+      type: "select",
+      value: THREE.FrontSide,
+      options: {
+        FrontSide: THREE.FrontSide,
+        BackSide: THREE.BackSide,
+        DoubleSide: THREE.DoubleSide
+      }
+    },
+
+    vertexColors: { type: "boolean", value: false },
+    wireframe: { type: "boolean", value: false },
+    wireframeLinewidth: { type: "number", value: 1 },
+
+    flatShading: { type: "boolean", value: false },
+
+    bumpMap: { type: "texture", value: null },
+    bumpScale: { type: "number", value: 1 },
+
+    normalMap: { type: "texture", value: null },
+    normalScale: {
+      type: "vector2",
+      value: new THREE.Vector2(1, 1)
+    },
+
+    displacementMap: { type: "texture", value: null },
+    displacementScale: { type: "number", value: 0 },
+    displacementBias: { type: "number", value: 0 },
+
+    toneMapped: { type: "boolean", value: true }
+  },
+
+
+  MeshMatcapMaterial: {
+    color: { type: "color", value: 0xffffff },
+
+    opacity: { type: "number", value: 1 },
+    transparent: { type: "boolean", value: false },
+    alphaHash: { type: "boolean", value: false },
+    alphaTest: { type: "number", value: 0 },
+
+    depthTest: { type: "boolean", value: true },
+    depthWrite: { type: "boolean", value: true },
+
+    side: {
+      type: "select",
+      value: THREE.FrontSide,
+      options: {
+        FrontSide: THREE.FrontSide,
+        BackSide: THREE.BackSide,
+        DoubleSide: THREE.DoubleSide
+      }
+    },
+
+    vertexColors: { type: "boolean", value: false },
+    wireframe: { type: "boolean", value: false },
+    wireframeLinewidth: { type: "number", value: 1 },
+
+    map: { type: "texture", value: null },
+    matcap: { type: "texture", value: null },
+
+    bumpMap: { type: "texture", value: null },
+    bumpScale: { type: "number", value: 1 },
+
+    normalMap: { type: "texture", value: null },
+    normalScale: {
+      type: "vector2",
+      value: new THREE.Vector2(1, 1)
+    },
+
+    displacementMap: { type: "texture", value: null },
+    displacementScale: { type: "number", value: 0 },
+    displacementBias: { type: "number", value: 0 },
+
+    flatShading: { type: "boolean", value: false },
+
+    fog: { type: "boolean", value: true },
+
+    toneMapped: { type: "boolean", value: true }
+  },
+
+
+  MeshDepthMaterial: {
+    opacity: { type: "number", value: 1 },
+    transparent: { type: "boolean", value: false },
+    alphaHash: { type: "boolean", value: false },
+    alphaTest: { type: "number", value: 0 },
+
+    depthTest: { type: "boolean", value: true },
+    depthWrite: { type: "boolean", value: true },
+
+    side: {
+      type: "select",
+      value: THREE.FrontSide,
+      options: {
+        FrontSide: THREE.FrontSide,
+        BackSide: THREE.BackSide,
+        DoubleSide: THREE.DoubleSide
+      }
+    },
+
+    wireframe: { type: "boolean", value: false },
+    wireframeLinewidth: { type: "number", value: 1 },
+
+    map: { type: "texture", value: null },
+    alphaMap: { type: "texture", value: null },
+
+    displacementMap: { type: "texture", value: null },
+    displacementScale: { type: "number", value: 0 },
+    displacementBias: { type: "number", value: 0 },
+
+    depthPacking: {
+      type: "select",
+      value: THREE.BasicDepthPacking,
+      options: {
+        BasicDepthPacking: THREE.BasicDepthPacking,
+        RGBADepthPacking: THREE.RGBADepthPacking
+      }
+    }
+  },
+
+
+  MeshDistanceMaterial: {
+    opacity: { type: "number", value: 1 },
+    transparent: { type: "boolean", value: false },
+    alphaHash: { type: "boolean", value: false },
+    alphaTest: { type: "number", value: 0 },
+
+    depthTest: { type: "boolean", value: true },
+    depthWrite: { type: "boolean", value: true },
+
+    side: {
+      type: "select",
+      value: THREE.FrontSide,
+      options: {
+        FrontSide: THREE.FrontSide,
+        BackSide: THREE.BackSide,
+        DoubleSide: THREE.DoubleSide
+      }
+    },
+
+    map: { type: "texture", value: null },
+    alphaMap: { type: "texture", value: null },
+
+    displacementMap: { type: "texture", value: null },
+    displacementScale: { type: "number", value: 0 },
+    displacementBias: { type: "number", value: 0 }
+  },
+
+
+  ShadowMaterial: {
+    color: { type: "color", value: 0x000000 },
+
+    opacity: { type: "number", value: 1 },
+    transparent: { type: "boolean", value: true },
+
+    depthTest: { type: "boolean", value: true },
+    depthWrite: { type: "boolean", value: true },
+
+    side: {
+      type: "select",
+      value: THREE.FrontSide,
+      options: {
+        FrontSide: THREE.FrontSide,
+        BackSide: THREE.BackSide,
+        DoubleSide: THREE.DoubleSide
+      }
+    },
+
+    fog: { type: "boolean", value: true }
+  },
+
+
+  PointsMaterial: {
+    color: { type: "color", value: 0xffffff },
+
+    opacity: { type: "number", value: 1 },
+    transparent: { type: "boolean", value: false },
+    alphaHash: { type: "boolean", value: false },
+    alphaTest: { type: "number", value: 0 },
+
+    size: { type: "number", value: 1 },
+    sizeAttenuation: { type: "boolean", value: true },
+
+    map: { type: "texture", value: null },
+    alphaMap: { type: "texture", value: null },
+
+    vertexColors: { type: "boolean", value: false },
+
+    fog: { type: "boolean", value: true },
+
+    depthTest: { type: "boolean", value: true },
+    depthWrite: { type: "boolean", value: true },
+
+    toneMapped: { type: "boolean", value: true }
+  },
+
+
+  LineBasicMaterial: {
+    color: { type: "color", value: 0xffffff },
+
+    opacity: { type: "number", value: 1 },
+    transparent: { type: "boolean", value: false },
+    alphaHash: { type: "boolean", value: false },
+    alphaTest: { type: "number", value: 0 },
+
+    vertexColors: { type: "boolean", value: false },
+
+    linewidth: { type: "number", value: 1 },
+
+    depthTest: { type: "boolean", value: true },
+    depthWrite: { type: "boolean", value: true },
+
+    toneMapped: { type: "boolean", value: true }
+  },
+
+
+  LineDashedMaterial: {
+    color: { type: "color", value: 0xffffff },
+
+    opacity: { type: "number", value: 1 },
+    transparent: { type: "boolean", value: false },
+    alphaHash: { type: "boolean", value: false },
+    alphaTest: { type: "number", value: 0 },
+
+    vertexColors: { type: "boolean", value: false },
+
+    linewidth: { type: "number", value: 1 },
+
+    dashSize: { type: "number", value: 3 },
+    gapSize: { type: "number", value: 1 },
+    scale: { type: "number", value: 1 },
+
+    depthTest: { type: "boolean", value: true },
+    depthWrite: { type: "boolean", value: true },
+
+    toneMapped: { type: "boolean", value: true }
+  },
+
+
+  SpriteMaterial: {
+    color: { type: "color", value: 0xffffff },
+
+    opacity: { type: "number", value: 1 },
+    transparent: { type: "boolean", value: true },
+    alphaHash: { type: "boolean", value: false },
+    alphaTest: { type: "number", value: 0 },
+
+    map: { type: "texture", value: null },
+    alphaMap: { type: "texture", value: null },
+
+    rotation: { type: "number", value: 0 },
+
+    sizeAttenuation: { type: "boolean", value: true },
+
+    fog: { type: "boolean", value: true },
+
+    depthTest: { type: "boolean", value: true },
+    depthWrite: { type: "boolean", value: true },
+
+    toneMapped: { type: "boolean", value: true }
+  }
+
+};
   const effects = {
 
       bloom: {
@@ -1135,7 +1786,40 @@ async function createEditor(mainscene,initialization,rawObject){
           if (child.isMesh) {
             child.material = material
           }
-
+          if(material?.isPointsMaterial){
+            const pointsGeometry = new THREE.BufferGeometry().setFromPoints([
+              new THREE.Vector3(-40, 1, 0),
+              new THREE.Vector3(0, 4, 0),
+              new THREE.Vector3(40, 1, 0),
+            ]);
+            mesh = new THREE.Points(
+              pointsGeometry,
+              material
+            );
+          }
+          if(material?.isLineDashedMaterial || material?.isLineBasicMaterial ){
+            camera.position.set(0, 6,0);
+            camera.lookAt(new THREE.Vector3(0,0,0))
+            const lineGeometry = new THREE.BufferGeometry().setFromPoints([
+              new THREE.Vector3(-3, 0, 0),
+              new THREE.Vector3(3, 0, 0),
+            ]);
+            mesh = new THREE.Line(
+              lineGeometry,
+              material
+            );
+            mesh.computeLineDistances();
+          }
+          if(material?.isSpriteMaterial){
+            const pivot = new THREE.Object3D();
+            let sprite = new THREE.Sprite(
+              material
+            );
+            sprite.position.set(100, -1, 0);
+            sprite.scale.set(100, 100, 1)
+            pivot.add(sprite);
+            mesh = pivot
+          }
       });
         }   
         if(mode == "specialEffects"){
@@ -1783,6 +2467,40 @@ createSceneSettings()
   function createMaterialPanel(object,panelContainer){
     let panel = document.createElement('div')
     panel.id = 'materialPanel'
+    let row = createRow('materialType')
+    let keyElement = createKeyElement('type')
+    let typeSelect = createSettingSelect()
+
+    typeSelect.style.textTransform = 'none'
+    Object.keys(materialProperties).forEach((material)=>{
+      let option = document.createElement('option')
+      option.innerText = material
+      option.value = material
+      const materialType = materials[material];
+
+      const objectType = {
+        Sprite: "Sprite",
+        Line: "Line",
+        Points: "Points"
+      }[object.type];
+
+      if (!materialType?.Line && !materialType?.Sprite && !materialType?.Points) {
+        typeSelect.append(option);
+      }
+      else if (materialType?.[objectType]) {
+        typeSelect.append(option);
+      }
+    })
+    typeSelect.addEventListener('change',(event)=>{
+      object.material = new THREE[typeSelect.value]
+      document.querySelectorAll('.removeable').forEach((child)=>child.remove())
+      appendMaterialParameters(object,panel,true)
+    })
+    typeSelect.value = object.material.type
+    
+    row.append(keyElement,typeSelect)
+    panel.append(row)
+    appendMaterialParameters(object,panel,false)
     panelContainer.appendChild(panel)
   }
 
@@ -1828,7 +2546,70 @@ createSceneSettings()
 
 
   // Helping functions
+  function appendMaterialParameters(object,container,initialize){
+    Object.entries(materialProperties[object.material.type]).forEach(property => {
+      let propertyName = property[0]
+      let objectMaterial = object.material
+      let propValue = initialize ? property[1].value : objectMaterial[propertyName]
+      let row = createRow(propertyName)
+      row.classList.add('removeable')
+      let keyElement = createKeyElement(propertyName)
+      if(property[1].type === "color"){
+        if(!initialize)propValue = '#' + propValue.getHexString()
+        let color = createColorInput(propValue)
+        color.addEventListener('input',(e)=>{
+          object.material['color'].set(e.target.value)
+        })
+        row.append(keyElement,color)
+      }
+      if(property[1].type === "number"){
+        let number = createNumberInput(propValue)
+        number.addEventListener('change',(e)=>{
+          object.material[propertyName] = +number.value
+        })
+        row.append(keyElement,number)
 
+      }
+      if(property[1].type === "boolean"){
+        let boolean = createCheckBoxInput(object.material,property[0])
+        row.append(keyElement,boolean)
+      }
+      if(property[1].type === "select"){
+        let select = createSettingSelect()
+
+        select.style.textTransform = 'none'
+        Object.keys(property[1].options).forEach((optionName)=>{
+          let option = document.createElement('option')
+          option.innerText = optionName
+          select.append(option)
+        })
+
+        select.addEventListener('change',(e)=>{
+          object.material[propertyName] = property[1].options[e.target.value]
+        })
+
+        select.value = Object.keys(property[1].options).find(key => property[1].options[key] === propValue);
+        row.append(keyElement,select)
+      
+      }
+      if(property[1].type === "texture"){
+
+      }
+      if(property[1].type === "vector2"){
+
+      }
+      if(property[1].type === "vector3"){
+
+      }
+      if(property[1].type === "vector4"){
+
+      }
+      if(property[1].type === "string"){
+
+      }
+      container.append(row)
+    });
+  }
   function saveSettingState(){
     window.localStorage.setItem('setting',JSON.stringify(settings))
     saveSceneState()
@@ -1886,7 +2667,7 @@ createSceneSettings()
     if(!e.target.classList.contains('selected')){
       document.querySelectorAll('.selected').forEach((e)=>e.classList.remove('selected'))
       document.querySelectorAll('.panelOpen').forEach((e)=>e.classList.remove('panelOpen'))
-      document.querySelector(`#${e.target.innerText.toLowerCase() + 'Panel'}`).classList.add('panelOpen')
+      document.querySelector(`#${e.target.innerHTML.toLowerCase() + 'Panel'}`).classList.add('panelOpen')
       e.target.classList.add('selected')
     }
 
@@ -2180,11 +2961,11 @@ createSceneSettings()
       isDraggingTransformControls = false 
       if(chosenLayer?.userData?.vertexNormalsHelper){
         let ob = mainScene.getObjectByProperty('uuid', chosenLayer.userData.vertexNormalsHelper);
-        if(ob)ob.update()
+        if(ob?.update)ob.update()
       }
       if((chosenLayer?.isLight || chosenLayer?.userData?.isTarget) && chosenLayer?.userData.object){    
         let ob = mainScene.getObjectByProperty('uuid', chosenLayer.userData.object);
-        if(ob)ob.update()
+        if(ob?.update)ob.update()
       }
       if(TC.mode == "translate"){
         if(chosenLayer){
@@ -2482,6 +3263,7 @@ function disposeEverything() {
   mainComposer = null
   effectName = null
   chosenLayer = null
+  document.getElementById('panelContainer') && document.getElementById('panelContainer').remove()
   hideTransformAndSelectionBox()  
     if(TC)TC.detach();
     ([...mainScene.children]).forEach((child)=>{

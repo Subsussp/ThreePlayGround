@@ -27,8 +27,7 @@ renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
 document.body.append(renderer.domElement)
 mesh.position.set(0,0,0)
-camera.position.set(0,100,200)
-camera.lookAt(0,0,0)
+camera.position.set(0, .3,200);
 // scene.add(mesh)
 let boxhelper;
 gltb.scene.position.set(0,0,0)
@@ -37,22 +36,22 @@ gltb.scene.traverse((child)=>{
         child?.geometry.center()
         boxhelper = new THREE.BoxHelper(child)
         light.target = child
-        scene.add(child)
+        // scene.add(child)
 
         child.material = new THREE.MeshToonMaterial()
     }
 })
 scene.add(light)
-scene.add(boxhelper)
+// scene.add(boxhelper)
 
-const material = new THREE.SpriteMaterial( { map: map, color: 0xffffff } );
+const material = new THREE.SpriteMaterial( { map: map, } );
 const sprite = new THREE.Sprite( material );
-// sprite.scale.set(200, 200, 1)
+sprite.scale.set(200, 200, 1)
 // scene.add( sprite );
 // mesh.rotation.x = Math.PI / 2
 // mesh.scale.setX()
-console.log(mesh.rotation.x);
 
+scene.add(sprite)
 scene.add(lightHelper)
 scene.add(camera)
 

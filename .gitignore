@@ -12,7 +12,7 @@ dist
 dist-ssr
 *.local
 .stfolder
-
+README_DRAFT.md
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
