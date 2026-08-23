@@ -151,6 +151,12 @@ async function createEditor(mainscene,initialization,rawObject){
     disposeEverything()
     saveSceneState()
   })
+  Photo.addEventListener('change', (event) => {
+  const file = event.target.files[0];
+  if (!file) return;
+  const url = URL.createObjectURL(file);
+  functionAfterPhotoUpload(url)
+})
   // delete the loaderMap after you finish
   let loaderMap = {
     glb: GLTFLoader,
@@ -1910,12 +1916,6 @@ const materialProperties = {
     });
   }
   function createSceneSettings(){
-    Photo.addEventListener('change', (event) => {
-      const file = event.target.files[0];
-      if (!file) return;
-      const url = URL.createObjectURL(file);
-      functionAfterPhotoUpload(url)
-    })
     Object.keys(sceneSetting).forEach((key)=>{
       let row = createRow(key)
       let keyElement = createKeyElement(key,'tabs title')
@@ -2642,13 +2642,14 @@ createSceneSettings()
       let row = createRow(propertyName)
       row.classList.add('removeable')
       let keyElement = createKeyElement(propertyName)
+      row.appendChild(keyElement)
       if(property[1].type === "color"){
         if(!initialize)propValue = '#' + propValue.getHexString()
         let color = createColorInput(propValue)
         color.addEventListener('input',(e)=>{
           objectMaterial['color'].set(e.target.value)
         })
-        row.append(keyElement,color)
+         row.appendChild(color)
       }
       if(property[1].type === "number"){
         let number = createNumberInput(propValue)
@@ -2672,12 +2673,12 @@ createSceneSettings()
             window.removeEventListener('mousemove',valueHandler)
         })
         })
-        row.append(keyElement,number)
+         row.appendChild(number)
 
       }
       if(property[1].type === "boolean"){
         let boolean = createCheckBoxInput(object.material,property[0])
-        row.append(keyElement,boolean)
+        row.appendChild(boolean)
       }
       if(property[1].type === "select"){
         let select = createSettingSelect()
@@ -2694,10 +2695,28 @@ createSceneSettings()
         })
 
         select.value = Object.keys(property[1].options).find(key => property[1].options[key] === propValue);
-        row.append(keyElement,select)
+        row.appendChild(select)
       
       }
       if(property[1].type === "texture"){
+        let square = document.createElement('div')
+        square.style.width = '30px'
+        square.style.height = '20px'
+        square.style.cursor = 'pointer'
+        square.style.backgroundColor = 'white'
+        square.addEventListener('click',(event)=>{
+          Photo.click()
+          functionAfterPhotoUpload = (url)=>{
+            const loader = new THREE.TextureLoader();
+            loader.load(url, (texture) => {
+              object.material[propertyName] = texture;
+              object.material.needsUpdate = true;              
+              URL.revokeObjectURL(url);
+            });
+          }
+
+        })
+        row.appendChild(square)
 
       }
       if(property[1].type === "vector2"){
