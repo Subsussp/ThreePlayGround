@@ -2629,14 +2629,31 @@ createSceneSettings()
         if(!initialize)propValue = '#' + propValue.getHexString()
         let color = createColorInput(propValue)
         color.addEventListener('input',(e)=>{
-          object.material['color'].set(e.target.value)
+          objectMaterial['color'].set(e.target.value)
         })
         row.append(keyElement,color)
       }
       if(property[1].type === "number"){
         let number = createNumberInput(propValue)
         number.addEventListener('change',(e)=>{
-          object.material[propertyName] = +number.value
+          objectMaterial[propertyName] = +number.value
+        })
+        function valueHandler(event) {
+          let Xmulti = event.clientX - initialMouseXPosition 
+          let Ymulti = initialMouseYPosition - event.clientY
+          initialMouseXPosition = event.clientX 
+          initialMouseYPosition = event.clientY
+          
+          numberInputValueControl(event,number,0.0020, null, null,'',Xmulti,Ymulti)     
+          objectMaterial[propertyName] = +number.value   
+        }
+        number.addEventListener('mousedown',(event)=>{
+          initialMouseXPosition = event.clientX 
+          initialMouseYPosition = event.clientY
+          window.addEventListener("mousemove",valueHandler)
+          window.addEventListener('mouseup',(e)=>{
+            window.removeEventListener('mousemove',valueHandler)
+        })
         })
         row.append(keyElement,number)
 
@@ -2893,13 +2910,9 @@ createSceneSettings()
       switch (extention) {
         case 'glb' :
         case 'gltf' :
-          const loName = loaderMap[extention]
-          const NLoader = new loName()    
-          const dracoLoader = new DRACOLoader();
-          dracoLoader.setDecoderPath('https://www.gstatic.com/draco/v1/decoders/'); 
-          NLoader.setDRACOLoader(dracoLoader);
-          let glbObj = NLoader.load(blobUrl,(e)=>{
+          let glbObj = loader.load(blobUrl,(e)=>{
             // e.scene.skip = true
+            chosenLayer = e.scene
             mainScene.add(e.scene)
           })
           break;
