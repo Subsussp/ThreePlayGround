@@ -286,14 +286,14 @@ async function createEditor(mainscene,initialization,rawObject){
       Line:true
     },
   }
- const materialProperties = {
+const materialProperties = {
 
   MeshBasicMaterial: {
     color: { type: "color", value: 0xffffff },
-    opacity: { type: "number", value: 1 },
+    opacity: { type: "number", value: 1, min: 0, max: 1 },
     transparent: { type: "boolean", value: false },
     alphaHash: { type: "boolean", value: false },
-    alphaTest: { type: "number", value: 0 },
+    alphaTest: { type: "number", value: 0, min: null, max: null },
 
     depthTest: { type: "boolean", value: true },
     depthWrite: { type: "boolean", value: true },
@@ -310,7 +310,7 @@ async function createEditor(mainscene,initialization,rawObject){
 
     vertexColors: { type: "boolean", value: false },
     wireframe: { type: "boolean", value: false },
-    wireframeLinewidth: { type: "number", value: 1 },
+    wireframeLinewidth: { type: "number", value: 1, min: null, max: null },
     fog: { type: "boolean", value: true },
 
     map: { type: "texture", value: null },
@@ -326,12 +326,12 @@ async function createEditor(mainscene,initialization,rawObject){
     color: { type: "color", value: 0xffffff },
 
     emissive: { type: "color", value: 0x000000 },
-    emissiveIntensity: { type: "number", value: 1 },
+    emissiveIntensity: { type: "number", value: 1, min: null, max: null },
 
-    opacity: { type: "number", value: 1 },
+    opacity: { type: "number", value: 1, min: 0, max: 1 },
     transparent: { type: "boolean", value: false },
     alphaHash: { type: "boolean", value: false },
-    alphaTest: { type: "number", value: 0 },
+    alphaTest: { type: "number", value: 0, min: null, max: null },
 
     depthTest: { type: "boolean", value: true },
     depthWrite: { type: "boolean", value: true },
@@ -348,7 +348,7 @@ async function createEditor(mainscene,initialization,rawObject){
 
     vertexColors: { type: "boolean", value: false },
     wireframe: { type: "boolean", value: false },
-    wireframeLinewidth: { type: "number", value: 1 },
+    wireframeLinewidth: { type: "number", value: 1, min: null, max: null },
     fog: { type: "boolean", value: true },
 
     map: { type: "texture", value: null },
@@ -365,15 +365,15 @@ async function createEditor(mainscene,initialization,rawObject){
     color: { type: "color", value: 0xffffff },
 
     specular: { type: "color", value: 0x111111 },
-    shininess: { type: "number", value: 30 },
+    shininess: { type: "number", value: 30, min: null, max: null },
 
     emissive: { type: "color", value: 0x000000 },
-    emissiveIntensity: { type: "number", value: 1 },
+    emissiveIntensity: { type: "number", value: 1, min: null, max: null },
 
-    opacity: { type: "number", value: 1 },
+    opacity: { type: "number", value: 1, min: 0, max: 1 },
     transparent: { type: "boolean", value: false },
     alphaHash: { type: "boolean", value: false },
-    alphaTest: { type: "number", value: 0 },
+    alphaTest: { type: "number", value: 0, min: null, max: null },
 
     depthTest: { type: "boolean", value: true },
     depthWrite: { type: "boolean", value: true },
@@ -390,7 +390,7 @@ async function createEditor(mainscene,initialization,rawObject){
 
     vertexColors: { type: "boolean", value: false },
     wireframe: { type: "boolean", value: false },
-    wireframeLinewidth: { type: "number", value: 1 },
+    wireframeLinewidth: { type: "number", value: 1, min: null, max: null },
     fog: { type: "boolean", value: true },
 
     map: { type: "texture", value: null },
@@ -400,17 +400,18 @@ async function createEditor(mainscene,initialization,rawObject){
     emissiveMap: { type: "texture", value: null },
 
     bumpMap: { type: "texture", value: null },
-    bumpScale: { type: "number", value: 1 },
+    bumpScale: { type: "number", value: 1,  min: null, max: null  },
 
     normalMap: { type: "texture", value: null },
     normalScale: {
       type: "vector2",
-      value: new THREE.Vector2(1, 1)
+      value: new THREE.Vector2(1, 1),
+ min: null, max: null 
     },
 
     displacementMap: { type: "texture", value: null },
-    displacementScale: { type: "number", value: 0 },
-    displacementBias: { type: "number", value: 0 },
+    displacementScale: { type: "number", value: 0, min: null, max: null },
+    displacementBias: { type: "number", value: 0, min: null, max: null },
 
     specularMap: { type: "texture", value: null },
 
@@ -424,12 +425,12 @@ async function createEditor(mainscene,initialization,rawObject){
     color: { type: "color", value: 0xffffff },
 
     emissive: { type: "color", value: 0x000000 },
-    emissiveIntensity: { type: "number", value: 1 },
+    emissiveIntensity: { type: "number", value: 1, min: null, max: null },
 
-    opacity: { type: "number", value: 1 },
+    opacity: { type: "number", value: 1, min: 0, max: 1 },
     transparent: { type: "boolean", value: false },
     alphaHash: { type: "boolean", value: false },
-    alphaTest: { type: "number", value: 0 },
+    alphaTest: { type: "number", value: 0, min: null, max: null },
 
     depthTest: { type: "boolean", value: true },
     depthWrite: { type: "boolean", value: true },
@@ -446,7 +447,7 @@ async function createEditor(mainscene,initialization,rawObject){
 
     vertexColors: { type: "boolean", value: false },
     wireframe: { type: "boolean", value: false },
-    wireframeLinewidth: { type: "number", value: 1 },
+    wireframeLinewidth: { type: "number", value: 1, min: null, max: null },
     fog: { type: "boolean", value: true },
 
     map: { type: "texture", value: null },
@@ -456,17 +457,18 @@ async function createEditor(mainscene,initialization,rawObject){
     emissiveMap: { type: "texture", value: null },
 
     bumpMap: { type: "texture", value: null },
-    bumpScale: { type: "number", value: 1 },
+    bumpScale: { type: "number", value: 1, min: null, max: null  },
 
     normalMap: { type: "texture", value: null },
     normalScale: {
       type: "vector2",
-      value: new THREE.Vector2(1, 1)
+      value: new THREE.Vector2(1, 1),
+ min: null, max: null 
     },
 
     displacementMap: { type: "texture", value: null },
-    displacementScale: { type: "number", value: 0 },
-    displacementBias: { type: "number", value: 0 },
+    displacementScale: { type: "number", value: 0, min: null, max: null },
+    displacementBias: { type: "number", value: 0, min: null, max: null },
 
     gradientMap: { type: "texture", value: null },
 
@@ -479,16 +481,16 @@ async function createEditor(mainscene,initialization,rawObject){
   MeshStandardMaterial: {
     color: { type: "color", value: 0xffffff },
 
-    roughness: { type: "number", value: 1 },
-    metalness: { type: "number", value: 0 },
+    roughness: { type: "number", value: 1, min: 0, max: 1 },
+    metalness: { type: "number", value: 0, min: 0, max: 1 },
 
     emissive: { type: "color", value: 0x000000 },
-    emissiveIntensity: { type: "number", value: 1 },
+    emissiveIntensity: { type: "number", value: 1, min: null, max: null },
 
-    opacity: { type: "number", value: 1 },
+    opacity: { type: "number", value: 1, min: 0, max: 1 },
     transparent: { type: "boolean", value: false },
     alphaHash: { type: "boolean", value: false },
-    alphaTest: { type: "number", value: 0 },
+    alphaTest: { type: "number", value: 0, min: null, max: null },
 
     depthTest: { type: "boolean", value: true },
     depthWrite: { type: "boolean", value: true },
@@ -505,7 +507,7 @@ async function createEditor(mainscene,initialization,rawObject){
 
     vertexColors: { type: "boolean", value: false },
     wireframe: { type: "boolean", value: false },
-    wireframeLinewidth: { type: "number", value: 1 },
+    wireframeLinewidth: { type: "number", value: 1, min: null, max: null },
     fog: { type: "boolean", value: true },
 
     map: { type: "texture", value: null },
@@ -515,23 +517,24 @@ async function createEditor(mainscene,initialization,rawObject){
     emissiveMap: { type: "texture", value: null },
 
     bumpMap: { type: "texture", value: null },
-    bumpScale: { type: "number", value: 1 },
+    bumpScale: { type: "number", value: 1,  min: null, max: null  },
 
     normalMap: { type: "texture", value: null },
     normalScale: {
       type: "vector2",
-      value: new THREE.Vector2(1, 1)
+      value: new THREE.Vector2(1, 1),
+      min: null, max: null 
     },
 
     displacementMap: { type: "texture", value: null },
-    displacementScale: { type: "number", value: 0 },
-    displacementBias: { type: "number", value: 0 },
+    displacementScale: { type: "number", value: 0, min: null, max: null },
+    displacementBias: { type: "number", value: 0, min: null, max: null },
 
     metalnessMap: { type: "texture", value: null },
     roughnessMap: { type: "texture", value: null },
 
     envMap: { type: "texture", value: null },
-    envMapIntensity: { type: "number", value: 1 },
+    envMapIntensity: { type: "number", value: 1, min: null, max: null },
 
     flatShading: { type: "boolean", value: false },
 
@@ -542,16 +545,16 @@ async function createEditor(mainscene,initialization,rawObject){
   MeshPhysicalMaterial: {
     color: { type: "color", value: 0xffffff },
 
-    roughness: { type: "number", value: 0.5 },
-    metalness: { type: "number", value: 0 },
+    roughness: { type: "number", value: 0.5, min: 0, max: 1 },
+    metalness: { type: "number", value: 0, min: 0, max: 1 },
 
     emissive: { type: "color", value: 0x000000 },
-    emissiveIntensity: { type: "number", value: 1 },
+    emissiveIntensity: { type: "number", value: 1, min: null, max: null },
 
-    opacity: { type: "number", value: 1 },
+    opacity: { type: "number", value: 1, min: 0, max: 1 },
     transparent: { type: "boolean", value: false },
     alphaHash: { type: "boolean", value: false },
-    alphaTest: { type: "number", value: 0 },
+    alphaTest: { type: "number", value: 0, min: null, max: null },
 
     depthTest: { type: "boolean", value: true },
     depthWrite: { type: "boolean", value: true },
@@ -568,7 +571,7 @@ async function createEditor(mainscene,initialization,rawObject){
 
     vertexColors: { type: "boolean", value: false },
     wireframe: { type: "boolean", value: false },
-    wireframeLinewidth: { type: "number", value: 1 },
+    wireframeLinewidth: { type: "number", value: 1, min: null, max: null },
     fog: { type: "boolean", value: true },
 
     map: { type: "texture", value: null },
@@ -578,26 +581,27 @@ async function createEditor(mainscene,initialization,rawObject){
     emissiveMap: { type: "texture", value: null },
 
     bumpMap: { type: "texture", value: null },
-    bumpScale: { type: "number", value: 1 },
+    bumpScale: { type: "number", value: 1,  min: null, max: null  },
 
     normalMap: { type: "texture", value: null },
     normalScale: {
       type: "vector2",
-      value: new THREE.Vector2(1, 1)
+      value: new THREE.Vector2(1, 1),
+ min: null, max: null 
     },
 
     displacementMap: { type: "texture", value: null },
-    displacementScale: { type: "number", value: 0 },
-    displacementBias: { type: "number", value: 0 },
+    displacementScale: { type: "number", value: 0, min: null, max: null },
+    displacementBias: { type: "number", value: 0, min: null, max: null },
 
     metalnessMap: { type: "texture", value: null },
     roughnessMap: { type: "texture", value: null },
 
     envMap: { type: "texture", value: null },
-    envMapIntensity: { type: "number", value: 1 },
+    envMapIntensity: { type: "number", value: 1, min: null, max: null },
 
-    clearcoat: { type: "number", value: 0 },
-    clearcoatRoughness: { type: "number", value: 0 },
+    clearcoat: { type: "number", value: 0, min: 0, max: 1 },
+    clearcoatRoughness: { type: "number", value: 0, min: 0, max: 1 },
 
     clearcoatMap: { type: "texture", value: null },
     clearcoatRoughnessMap: { type: "texture", value: null },
@@ -605,45 +609,56 @@ async function createEditor(mainscene,initialization,rawObject){
     clearcoatNormalMap: { type: "texture", value: null },
     clearcoatNormalScale: {
       type: "vector2",
-      value: new THREE.Vector2(1, 1)
+      value: new THREE.Vector2(1, 1),
+      min: 0,
+      max: 1
     },
 
-    ior: { type: "number", value: 1.5 },
+    ior: { type: "number", value: 1.5, min: 1, max: 2.333 },
 
-    specularIntensity: { type: "number", value: 1 },
+    specularIntensity: { type: "number", value: 1, min: 0, max: 1 },
     specularColor: { type: "color", value: 0xffffff },
 
     specularIntensityMap: { type: "texture", value: null },
     specularColorMap: { type: "texture", value: null },
 
-    iridescence: { type: "number", value: 0 },
-    iridescenceIOR: { type: "number", value: 1.3 },
+    iridescence: { type: "number", value: 0, min: 0, max: 1 },
+    iridescenceIOR: { type: "number", value: 1.3, min: 1, max: 2.333 },
+
     iridescenceThicknessRange: {
       type: "vector2",
-      value: new THREE.Vector2(100, 400)
+      value: new THREE.Vector2(100, 400),
+      min: null,
+      max: null
     },
 
     iridescenceMap: { type: "texture", value: null },
     iridescenceThicknessMap: { type: "texture", value: null },
 
-    sheen: { type: "number", value: 0 },
+    sheen: { type: "number", value: 0, min: 0, max: 1 },
     sheenColor: { type: "color", value: 0x000000 },
-    sheenRoughness: { type: "number", value: 1 },
+    sheenRoughness: { type: "number", value: 1, min: 0, max: 1 },
 
     sheenColorMap: { type: "texture", value: null },
     sheenRoughnessMap: { type: "texture", value: null },
 
-    transmission: { type: "number", value: 0 },
+    transmission: { type: "number", value: 0, min: 0, max: 1 },
     transmissionMap: { type: "texture", value: null },
 
-    thickness: { type: "number", value: 0 },
+    thickness: { type: "number", value: 0, min: 0, max: null },
     thicknessMap: { type: "texture", value: null },
 
-    attenuationDistance: { type: "number", value: Infinity },
+    attenuationDistance: {
+      type: "number",
+      value: Infinity,
+      min: 0,
+      max: null
+    },
+
     attenuationColor: { type: "color", value: 0xffffff },
 
-    anisotropy: { type: "number", value: 0 },
-    anisotropyRotation: { type: "number", value: 1 },
+    anisotropy: { type: "number", value: 0, min: 0, max: 1 },
+    anisotropyRotation: { type: "number", value: 1, min: null, max: null },
     anisotropyMap: { type: "texture", value: null },
 
     flatShading: { type: "boolean", value: false },
@@ -653,10 +668,10 @@ async function createEditor(mainscene,initialization,rawObject){
 
 
   MeshNormalMaterial: {
-    opacity: { type: "number", value: 1 },
+    opacity: { type: "number", value: 1, min: 0, max: 1 },
     transparent: { type: "boolean", value: false },
     alphaHash: { type: "boolean", value: false },
-    alphaTest: { type: "number", value: 0 },
+    alphaTest: { type: "number", value: 0, min: null, max: null },
 
     depthTest: { type: "boolean", value: true },
     depthWrite: { type: "boolean", value: true },
@@ -673,22 +688,23 @@ async function createEditor(mainscene,initialization,rawObject){
 
     vertexColors: { type: "boolean", value: false },
     wireframe: { type: "boolean", value: false },
-    wireframeLinewidth: { type: "number", value: 1 },
+    wireframeLinewidth: { type: "number", value: 1, min: null, max: null },
 
     flatShading: { type: "boolean", value: false },
 
     bumpMap: { type: "texture", value: null },
-    bumpScale: { type: "number", value: 1 },
+    bumpScale: { type: "number", value: 1,  min: null, max: null  },
 
     normalMap: { type: "texture", value: null },
     normalScale: {
       type: "vector2",
-      value: new THREE.Vector2(1, 1)
+      value: new THREE.Vector2(1, 1),
+ min: null, max: null 
     },
 
     displacementMap: { type: "texture", value: null },
-    displacementScale: { type: "number", value: 0 },
-    displacementBias: { type: "number", value: 0 },
+    displacementScale: { type: "number", value: 0, min: null, max: null },
+    displacementBias: { type: "number", value: 0, min: null, max: null },
 
     toneMapped: { type: "boolean", value: true }
   },
@@ -697,10 +713,10 @@ async function createEditor(mainscene,initialization,rawObject){
   MeshMatcapMaterial: {
     color: { type: "color", value: 0xffffff },
 
-    opacity: { type: "number", value: 1 },
+    opacity: { type: "number", value: 1, min: 0, max: 1 },
     transparent: { type: "boolean", value: false },
     alphaHash: { type: "boolean", value: false },
-    alphaTest: { type: "number", value: 0 },
+    alphaTest: { type: "number", value: 0, min: null, max: null },
 
     depthTest: { type: "boolean", value: true },
     depthWrite: { type: "boolean", value: true },
@@ -717,23 +733,24 @@ async function createEditor(mainscene,initialization,rawObject){
 
     vertexColors: { type: "boolean", value: false },
     wireframe: { type: "boolean", value: false },
-    wireframeLinewidth: { type: "number", value: 1 },
+    wireframeLinewidth: { type: "number", value: 1, min: null, max: null },
 
     map: { type: "texture", value: null },
     matcap: { type: "texture", value: null },
 
     bumpMap: { type: "texture", value: null },
-    bumpScale: { type: "number", value: 1 },
+    bumpScale: { type: "number", value: 1,  min: null, max: null },
 
     normalMap: { type: "texture", value: null },
     normalScale: {
       type: "vector2",
-      value: new THREE.Vector2(1, 1)
+      value: new THREE.Vector2(1, 1),
+ min: null, max: null 
     },
 
     displacementMap: { type: "texture", value: null },
-    displacementScale: { type: "number", value: 0 },
-    displacementBias: { type: "number", value: 0 },
+    displacementScale: { type: "number", value: 0, min: null, max: null },
+    displacementBias: { type: "number", value: 0, min: null, max: null },
 
     flatShading: { type: "boolean", value: false },
 
@@ -744,10 +761,10 @@ async function createEditor(mainscene,initialization,rawObject){
 
 
   MeshDepthMaterial: {
-    opacity: { type: "number", value: 1 },
+    opacity: { type: "number", value: 1, min: 0, max: 1 },
     transparent: { type: "boolean", value: false },
     alphaHash: { type: "boolean", value: false },
-    alphaTest: { type: "number", value: 0 },
+    alphaTest: { type: "number", value: 0, min: null, max: null },
 
     depthTest: { type: "boolean", value: true },
     depthWrite: { type: "boolean", value: true },
@@ -763,14 +780,14 @@ async function createEditor(mainscene,initialization,rawObject){
     },
 
     wireframe: { type: "boolean", value: false },
-    wireframeLinewidth: { type: "number", value: 1 },
+    wireframeLinewidth: { type: "number", value: 1, min: null, max: null },
 
     map: { type: "texture", value: null },
     alphaMap: { type: "texture", value: null },
 
     displacementMap: { type: "texture", value: null },
-    displacementScale: { type: "number", value: 0 },
-    displacementBias: { type: "number", value: 0 },
+    displacementScale: { type: "number", value: 0, min: null, max: null },
+    displacementBias: { type: "number", value: 0, min: null, max: null },
 
     depthPacking: {
       type: "select",
@@ -784,10 +801,10 @@ async function createEditor(mainscene,initialization,rawObject){
 
 
   MeshDistanceMaterial: {
-    opacity: { type: "number", value: 1 },
+    opacity: { type: "number", value: 1, min: 0, max: 1 },
     transparent: { type: "boolean", value: false },
     alphaHash: { type: "boolean", value: false },
-    alphaTest: { type: "number", value: 0 },
+    alphaTest: { type: "number", value: 0, min: null, max: null },
 
     depthTest: { type: "boolean", value: true },
     depthWrite: { type: "boolean", value: true },
@@ -806,15 +823,15 @@ async function createEditor(mainscene,initialization,rawObject){
     alphaMap: { type: "texture", value: null },
 
     displacementMap: { type: "texture", value: null },
-    displacementScale: { type: "number", value: 0 },
-    displacementBias: { type: "number", value: 0 }
+    displacementScale: { type: "number", value: 0, min: null, max: null },
+    displacementBias: { type: "number", value: 0, min: null, max: null }
   },
 
 
   ShadowMaterial: {
     color: { type: "color", value: 0x000000 },
 
-    opacity: { type: "number", value: 1 },
+    opacity: { type: "number", value: 1, min: 0, max: 1 },
     transparent: { type: "boolean", value: true },
 
     depthTest: { type: "boolean", value: true },
@@ -837,12 +854,12 @@ async function createEditor(mainscene,initialization,rawObject){
   PointsMaterial: {
     color: { type: "color", value: 0xffffff },
 
-    opacity: { type: "number", value: 1 },
+    opacity: { type: "number", value: 1, min: 0, max: 1 },
     transparent: { type: "boolean", value: false },
     alphaHash: { type: "boolean", value: false },
-    alphaTest: { type: "number", value: 0 },
+    alphaTest: { type: "number", value: 0, min: null, max: null },
 
-    size: { type: "number", value: 1 },
+    size: { type: "number", value: 1, min: null, max: null },
     sizeAttenuation: { type: "boolean", value: true },
 
     map: { type: "texture", value: null },
@@ -862,14 +879,14 @@ async function createEditor(mainscene,initialization,rawObject){
   LineBasicMaterial: {
     color: { type: "color", value: 0xffffff },
 
-    opacity: { type: "number", value: 1 },
+    opacity: { type: "number", value: 1, min: 0, max: 1 },
     transparent: { type: "boolean", value: false },
     alphaHash: { type: "boolean", value: false },
-    alphaTest: { type: "number", value: 0 },
+    alphaTest: { type: "number", value: 0, min: null, max: null },
 
     vertexColors: { type: "boolean", value: false },
 
-    linewidth: { type: "number", value: 1 },
+    linewidth: { type: "number", value: 1, min: null, max: null },
 
     depthTest: { type: "boolean", value: true },
     depthWrite: { type: "boolean", value: true },
@@ -881,18 +898,18 @@ async function createEditor(mainscene,initialization,rawObject){
   LineDashedMaterial: {
     color: { type: "color", value: 0xffffff },
 
-    opacity: { type: "number", value: 1 },
+    opacity: { type: "number", value: 1, min: 0, max: 1 },
     transparent: { type: "boolean", value: false },
     alphaHash: { type: "boolean", value: false },
-    alphaTest: { type: "number", value: 0 },
+    alphaTest: { type: "number", value: 0, min: null, max: null },
 
     vertexColors: { type: "boolean", value: false },
 
-    linewidth: { type: "number", value: 1 },
+    linewidth: { type: "number", value: 1, min: null, max: null },
 
-    dashSize: { type: "number", value: 3 },
-    gapSize: { type: "number", value: 1 },
-    scale: { type: "number", value: 1 },
+    dashSize: { type: "number", value: 3, min: null, max: null },
+    gapSize: { type: "number", value: 1, min: null, max: null },
+    scale: { type: "number", value: 1, min: null, max: null },
 
     depthTest: { type: "boolean", value: true },
     depthWrite: { type: "boolean", value: true },
@@ -904,15 +921,15 @@ async function createEditor(mainscene,initialization,rawObject){
   SpriteMaterial: {
     color: { type: "color", value: 0xffffff },
 
-    opacity: { type: "number", value: 1 },
+    opacity: { type: "number", value: 1, min: 0, max: 1 },
     transparent: { type: "boolean", value: true },
     alphaHash: { type: "boolean", value: false },
-    alphaTest: { type: "number", value: 0 },
+    alphaTest: { type: "number", value: 0, min: null, max: null },
 
     map: { type: "texture", value: null },
     alphaMap: { type: "texture", value: null },
 
-    rotation: { type: "number", value: 0 },
+    rotation: { type: "number", value: 0, min: null, max: null },
 
     sizeAttenuation: { type: "boolean", value: true },
 
@@ -2643,8 +2660,8 @@ createSceneSettings()
           let Ymulti = initialMouseYPosition - event.clientY
           initialMouseXPosition = event.clientX 
           initialMouseYPosition = event.clientY
-          
-          numberInputValueControl(event,number,0.0020, null, null,'',Xmulti,Ymulti)     
+          console.log(property[1].min , property[1].max);
+          numberInputValueControl(event,number,0.0020, property[1].min , property[1].max,'',Xmulti,Ymulti)     
           objectMaterial[propertyName] = +number.value   
         }
         number.addEventListener('mousedown',(event)=>{
