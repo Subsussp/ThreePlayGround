@@ -1780,7 +1780,7 @@ async function createEditor(mainscene,initialization,rawObject){
         if(mode == "material"){
           camera.position.set(0, .3,200);
           let material = new THREE[prototypes[i].dataset.TE](...materials[prototypes[i].dataset.TE].args)
-          let AmbientLight = new THREE.AmbientLight(0x404040,10)
+          let AmbientLight = new THREE.DirectionalLight(0x404040,10)
           scene.add(AmbientLight)
           mesh = statue.clone()
           mesh.traverse((child) => {
@@ -1973,7 +1973,7 @@ createSceneSettings()
         createMaterialPanel(chosenLayer,panelContainer)
         meshComponentContainer.appendChild(label)
       }
-      if(rawObject?.effectsNames || mainComposer){
+      if((rawObject?.effectsNames?.length ?? 0 > 0) || mainComposer){
         let label = document.createElement('div')
         label.classList.add('vertwr')
         label.innerHTML ='Effects'
@@ -2100,7 +2100,14 @@ createSceneSettings()
         select.addEventListener('change',(event)=>{
           settings.showTransformControls = event.target.value === "true"
           saveSettingState()
-          event.target.value === "true" ? showTransform() : hideTransformAndSelectionBox()
+          
+          if(event.target.value === "true"){
+            showTransform();
+          }
+          else{    
+            TC.enabled = false
+            TC.getHelper().visible = false 
+  }
         })
       }
       else if(key == 'wireframe'){
@@ -2299,6 +2306,12 @@ createSceneSettings()
     let row = createRow('name')
     let keyElement = createKeyElement('name')
     let TextInput = createTextInput()
+    let row1 = createRow('uuid')
+    let keyElement1 = createKeyElement('uuid')
+    let TextInput1 = createTextInput()
+    TextInput1.disabled = true
+    TextInput1.value = object.uuid
+    row1.append(keyElement1,TextInput1)
     TextInput.value = object['name']
     TextInput.addEventListener('keydown',(e)=>{
       e.stopPropagation()
@@ -2309,7 +2322,7 @@ createSceneSettings()
       layerContainer.querySelector(`[data-uuid="${chosenLayer.uuid}"] #LayerName`).innerHTML = object['name']
     })
     row.append(keyElement,TextInput)
-    panel.appendChild(row)
+    panel.append(row,row1)
 
     // position
     createRowWith3args(object,[object.position.x,object.position.y,object.position.z],panel,'position',.020)
@@ -2589,6 +2602,7 @@ createSceneSettings()
     return select
   }
 
+console.log(rawObject);
 
   // Helping functions
   function appendMaterialParameters(object,container,initialize){
@@ -2666,7 +2680,7 @@ createSceneSettings()
     else{
       pasr.chosenLayer = undefined
     }
-    if(effectsNames)pasr.effectsNames = effectsNames;
+    if(effectsNames?.length ?? 0 > 0)pasr.effectsNames = effectsNames;
     const tx = db.transaction("states", "readwrite");
     const store = tx.objectStore("states");     
     const putRequest = store.put(pasr,0);
@@ -2705,6 +2719,7 @@ createSceneSettings()
   }
 
   function showBoxHelper(){
+    
     selectionBox.visible = true;
   }
 
@@ -2810,7 +2825,7 @@ createSceneSettings()
           }
           if(e?.isGroup){
             let groupName = fileName
-            e.userData.name = fileName
+            e.userData.name = fileName ?? e.userData.name 
             appendLayer(e ,layerContainer,'type ',false)
 
             e.children.forEach((f)=>{              
@@ -2913,13 +2928,11 @@ createSceneSettings()
 
     mainCamera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
     if(rawObject){    
-      if(rawObject.effectsNames !== undefined){
+      if(rawObject?.effectsNames?.length ?? 0 > 0){
           mainComposer = new EffectComposer(mainRenderer)
           let renderPass = new RenderPass(mainScene,mainCamera)
           mainComposer.addPass( renderPass )    
-          // handle effects parameters here  
-          console.log(rawObject.effectsNames);
-                   
+          // handle effects parameters here                     
           effectsNames = rawObject.effectsNames
           rawObject.effectsNames.forEach((effect)=>{
             let specialEffect = effects[effect].create(mainRenderer,mainScene,mainCamera)
@@ -3191,6 +3204,11 @@ createSceneSettings()
               (mainScene.getObjectByProperty('uuid', chosenLayer.target)).removeFromParent()
             }
           } 
+          if(chosenLayer?.isGroup){
+            chosenLayer.children.forEach((child)=>{
+              layerContainer.querySelector(`[data-uuid="${child.uuid}"]`).remove()
+            })  
+          }
           chosenLayer.removeFromParent() 
           chosenLayer = null
           mainInit()
