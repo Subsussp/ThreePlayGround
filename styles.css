@@ -379,6 +379,16 @@ input.Number::selection {
 
     z-index: 999;
 }
+textarea {
+  /* width: 10; */
+  min-height: 20px;
+  padding: 8px;
+  box-sizing: border-box;
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+  text-align: left;
+  vertical-align: top;
+}
 
 #meshComponentContainer {
     display: flex;
