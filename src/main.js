@@ -1344,7 +1344,6 @@ async function createEditor(mainscene,initialization,rawObject){
         
         color.style.display ='none'
         color.addEventListener('input',(e)=>{
-          console.log( e.target.value);
           MainRealscene.background = new THREE.Color(e.target.value)
         })
         sceneSetting.background.color = color
@@ -1923,7 +1922,6 @@ async function createEditor(mainscene,initialization,rawObject){
       row.append(keyElement,containerDiv)
       sceneSettings.append(row)
       sceneSetting[key].initialize(containerDiv)
-      console.log(sceneSetting);
       
     })
 
@@ -1981,16 +1979,30 @@ createSceneSettings()
         meshComponentContainer.appendChild(label)
         let effectStack = document.createElement('div')
         effectStack.id = 'effectsPanel'
-        rawObject.effectsNames.forEach((effectName)=>{
-          let effect = document.createElement('div')
-          let effectSpan = document.createElement('span')
-          effect.className = 'effect'
-          effectSpan.innerHTML = effectName
-          effectSpan.dataset.effect = effectName
-          effect.innerHTML = `<i class="far fa-arrows-alt handle"></i>` + effectSpan.outerHTML
-          
-          effectStack.append(effect)
-        })
+        if((rawObject?.effectsNames?.length ?? 0 > 0)){
+          rawObject.effectsNames.forEach((effectName)=>{
+            let effect = document.createElement('div')
+            let effectSpan = document.createElement('span')
+            effect.className = 'effect'
+            effectSpan.innerHTML = effectName
+            effectSpan.dataset.effect = effectName
+            effect.innerHTML = `<i class="far fa-arrows-alt handle"></i>` + effectSpan.outerHTML
+            
+            effectStack.append(effect)
+          })
+        }else{
+          effectsNames.forEach((effectName)=>{
+            let effect = document.createElement('div')
+            let effectSpan = document.createElement('span')
+            effect.className = 'effect'
+            effectSpan.innerHTML = effectName
+            effectSpan.dataset.effect = effectName
+            effect.innerHTML = `<i class="far fa-arrows-alt handle"></i>` + effectSpan.outerHTML
+            
+            effectStack.append(effect)
+          })
+        }
+
         new Sortable(effectStack, {
           animation: 150,
           handle: '.handle',
@@ -2426,10 +2438,11 @@ createSceneSettings()
     let Row = createRow('attribute')
     let attributes = createKeyElement('attributes (points)')
     let divForAttributes = document.createElement('div')
+    console.log(object);
     let spanForDisplay = createInfoDisplaySpan('index',object.geometry.index.count)
     let spanForDisplay1 = createInfoDisplaySpan('position',object.geometry.attributes.position.count)
     let spanForDisplay2 = createInfoDisplaySpan('normal',object.geometry.attributes.normal.count)
-    let spanForDisplay3 = createInfoDisplaySpan('uv',object.geometry.attributes.uv.count)
+    let spanForDisplay3 = createInfoDisplaySpan('uv',object?.geometry?.attributes?.uv?.count ?? 0)
     
     divForAttributes.style.display = 'flex'
     divForAttributes.style.flexDirection = 'column'
@@ -2602,7 +2615,6 @@ createSceneSettings()
     return select
   }
 
-console.log(rawObject);
 
   // Helping functions
   function appendMaterialParameters(object,container,initialize){
@@ -2882,7 +2894,10 @@ console.log(rawObject);
         case 'glb' :
         case 'gltf' :
           const loName = loaderMap[extention]
-          const NLoader = new loName()        
+          const NLoader = new loName()    
+          const dracoLoader = new DRACOLoader();
+          dracoLoader.setDecoderPath('https://www.gstatic.com/draco/v1/decoders/'); 
+          NLoader.setDRACOLoader(dracoLoader);
           let glbObj = NLoader.load(blobUrl,(e)=>{
             // e.scene.skip = true
             mainScene.add(e.scene)
