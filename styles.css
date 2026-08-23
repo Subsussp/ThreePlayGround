@@ -389,7 +389,26 @@ textarea {
   text-align: left;
   vertical-align: top;
 }
-
+.menu-options{
+    position: fixed;
+    z-index: 1;
+    display: none;
+    top: 35px;
+    padding: 5px 0;
+    background: #111;
+    min-width: 150px;
+    max-height: calc(100vh - 80px);
+    overflow: auto;
+}
+.menu-tab > :nth-child(2) {
+    display: none;
+}
+.menu-title{
+    padding: 5px 10px;
+}
+.menu-tab:hover > :nth-child(2) {
+    display: inline-block;
+}
 #meshComponentContainer {
     display: flex;
     width: 100%;
@@ -439,14 +458,26 @@ textarea {
 }
 
 .menu-tab {
-    padding: 10px;
-    background-color: #060606;
+    line-height: 25px;
+    background-color: #111;
     color: #a5a5a5;
     font-family: Helvetica, Arial, sans-serif;
     font-weight: 100;
     margin: 0;
+    float: left;
 }
-
+.menu-option{
+    background-color: #111;
+    color: #a5a5a5;
+    font-family: Helvetica, Arial, sans-serif;
+    font-weight: 100;
+    padding: 5px 10px;
+    line-height: 25px;
+    margin: 0px !important;
+}
+.menu-option:hover{
+    background-color:#08f;
+}
 .optrans {
     width: 450px !important;
 }
