@@ -3277,15 +3277,18 @@ createSceneSettings()
 
 
   let names = {}
-  function handleExport(child) {
+  function handleExport(child,group) {
     if(child.constructor.name && Object.hasOwn(THREE,child.constructor.name)){
         // if(child?.userData?.isFileImport && child.isGroup){
         //   handleImportedSceneExport(child)
         //   return null
         // }
         if(child.isGroup){
-          codeSection += `let group = new THREE.group()\n`
-          child.children.forEach((groupChild)=>handleExport(groupChild))
+          let name = generateName('group')
+          codeSection += `let ${name} = new THREE.group()\n`
+          changeIfNotDefaultTransformValues(child)
+          child.children.forEach((groupChild)=>handleExport(groupChild,name))
+          sceneAddSection += `scene.add(${name})\n`
           return
         }
 
@@ -3293,7 +3296,7 @@ createSceneSettings()
         console.log(child.material);
       
         if(child?.isMesh){
-          handleMeshExport(child)
+          handleMeshExport(child,group)
       }
   }
 
@@ -3342,7 +3345,7 @@ let ${fileNameWithoutExtention} = await loader.loadAsync("./assets/${child.userD
 sceneAddSection += `scene.add(${fileNameWithoutExtention}.scene)\n` 
   }
 
-  function handleMeshExport(child){
+  function handleMeshExport(child,group){
     let meshVarName = generateName((child?.userData?.name ? child.userData.name : child.name ? child.name : child.type).replaceAll('.','_'));
     let geoVarName;
     let matVarName;
@@ -3370,7 +3373,7 @@ console.log(child.geometry);
     codeSection += `let ${meshVarName} = new THREE.${child.constructor.name}(${child?.geometry ? geoVarName : ''},${child?.material ? matVarName : ''})\n`
     changeIfNotDefaultTransformValues(child,meshVarName)
     codeSection += '\n'
-    sceneAddSection += `scene.add(${meshVarName})\n` 
+    sceneAddSection += `${group ?? 'scene'}.add(${meshVarName})\n` 
   }
   }
   function generateName(name) {
