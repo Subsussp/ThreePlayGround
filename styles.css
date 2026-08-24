@@ -487,9 +487,91 @@ textarea {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    height: 200px;
+    height: 70%;
+    overflow-x: hidden;
+    max-width: 70%;
+    border-radius: 8px;
+}
+.copy-button {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+
+    height: 32px;
+
+    display: flex;
+    align-items: center;
+    gap: 7px;
+
+    padding: 0 9px;
+
+    border: 1px solid transparent;
+    border-radius: 6px;
+
+    background: transparent;
+    color: #888;
+
+    cursor: pointer;
+
+    opacity: 0;
+
+    transition:
+        opacity 0.15s ease,
+        background-color 0.15s ease,
+        color 0.15s ease;
 }
 
+.code-container:hover .copy-button,
+.copy-button:focus-visible {
+    opacity: 1;
+}
+
+.copy-button:hover {
+    background: rgba(127, 127, 127, 0.15);
+    color: #fff;
+}
+
+.copy-button:active {
+    transform: scale(0.96);
+}
+
+.copy-button svg {
+    width: 17px;
+    height: 17px;
+    flex-shrink: 0;
+}
+
+.copy-text,
+.copied-text {
+    font-size: 13px;
+    line-height: 1;
+}
+
+.check-icon,
+.copied-text {
+    display: none;
+}
+
+/* Copied state */
+
+.copy-button.copied .copy-icon,
+.copy-button.copied .copy-text {
+    display: none;
+}
+
+.copy-button.copied .check-icon,
+.copy-button.copied .copied-text {
+    display: inline;
+}
+
+.copy-button.copied {
+    color: #4ade80;
+}
+#language-jsContain pre {
+    overflow-x: hidden;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
 .option {
     width: fit-content;
     transition: all 200ms ease-in-out;

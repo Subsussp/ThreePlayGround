@@ -150,7 +150,29 @@ async function createEditor(mainscene,initialization,rawObject){
   let selectionBox;
   let renderer = new THREE.WebGLRenderer({antialias:true})
   const spriteTexture =new THREE.TextureLoader().load("textures/sprite.jpg");
-  
+  const copyButton = document.querySelector(".copy-button");
+  const code = document.querySelector("#language-js");
+
+  let copyTimeout;
+
+  copyButton.addEventListener("click", async () => {
+      try {
+          await navigator.clipboard.writeText(code.textContent);
+
+          copyButton.classList.add("copied");
+          copyButton.setAttribute("aria-label", "Copied");
+
+          clearTimeout(copyTimeout);
+
+          copyTimeout = setTimeout(() => {
+              copyButton.classList.remove("copied");
+              copyButton.setAttribute("aria-label", "Copy code");
+          }, 1500);
+
+      } catch (error) {
+          console.error("Failed to copy:", error);
+      }
+  });
   newbutton.addEventListener('click',(e)=>{
     disposeEverything()
     saveSceneState()
@@ -3254,12 +3276,13 @@ createSceneSettings()
   }
 
 
+  let names = {}
   function handleExport(child) {
     if(child.constructor.name && Object.hasOwn(THREE,child.constructor.name)){
-        if(child?.userData?.isFileImport && child.isGroup){
-          handleImportedSceneExport(child)
-          return null
-        }
+        // if(child?.userData?.isFileImport && child.isGroup){
+        //   handleImportedSceneExport(child)
+        //   return null
+        // }
         if(child.isGroup){
           codeSection += `let group = new THREE.group()\n`
           child.children.forEach((groupChild)=>handleExport(groupChild))
@@ -3270,23 +3293,7 @@ createSceneSettings()
         console.log(child.material);
       
         if(child?.isMesh){
-          let meshVarName = child?.userData?.name ? child.userData.name : child.name ? child.name : child.type;
-          let geoVarName;
-          let matVarName;
-          if(child?.geometry){
-            let geoParams = Object.values(child.geometry.parameters)
-            geoVarName = child.geometry?.userData?.name ? child.geometry.userData.name : child.geometry.name ? child.geometry.name : child.geometry.type
-            codeSection += `let ${geoVarName} = new THREE.${child.geometry.constructor.name}(${geoParams ? geoParams.join(',') : ''})\n`
-          }
-          if(child?.material){
-            let matParam = checkWhichMaterialValuesChanged(child.material)
-            matVarName = child.material?.userData?.name ? child.material.userData.name : child.material.name ? child.material.name : child.material.type
-            codeSection += `let ${matVarName} = new THREE.${child.material.type}(${matParam ? matParam : ''})\n`
-          }
-          codeSection += `let ${meshVarName} = new THREE.${child.constructor.name}(${child?.geometry ? geoVarName : ''},${child?.material ? matVarName : ''})\n`
-          sceneAddSection += `scene.add(${meshVarName})\n` 
-        }
-      
+          handleMeshExport(child)
       }
   }
 
@@ -3297,10 +3304,6 @@ createSceneSettings()
       let propertyValues = element[1]
       let MatValue = material[propertyName];
       let valueText = null;
-
-      console.log(propertyName);
-      console.log(propertyValues);
-      console.log(MatValue);
       
       if(MatValue?.isVector2 ||MatValue?.isVector3 || MatValue?.isEuler){
         if(MatValue?.isEuler){
@@ -3331,16 +3334,76 @@ createSceneSettings()
     return arr.length === arr1.length && arr.every((value,i)=>value == arr1[i])
   }
   function handleImportedSceneExport(child){
+    let fileNameWithoutExtention = child.userData.fileName
     importSection += `import { ${loaderMap[child.userData.fileExtention]} } from 'three/addons/loaders/${loaderMap[child.userData.fileExtention]}.js';\n`
     codeSection += `let loader = THREE.${loaderMap[child.userData.fileExtention]}()
-let ${child.userData.fileExtention} = await loader.loadAsync("./assets/${child.userData.name}")\n`
-sceneAddSection += `scene.add(${child.userData.fileExtention}.scene)\n` 
+let ${fileNameWithoutExtention} = await loader.loadAsync("./assets/${child.userData.name}")\n`
+    changeIfNotDefaultTransformValues(child,fileNameWithoutExtention)
+sceneAddSection += `scene.add(${fileNameWithoutExtention}.scene)\n` 
   }
 
-  function handleMeshExport(){
+  function handleMeshExport(child){
+    let meshVarName = generateName((child?.userData?.name ? child.userData.name : child.name ? child.name : child.type).replaceAll('.','_'));
+    let geoVarName;
+    let matVarName;
+    
+    if(child?.geometry){
+      geoVarName = generateName((child.geometry?.userData?.name ? child.geometry.userData.name : child.geometry.name ? child.geometry.name : child.geometry.type).replaceAll('.','_'))
+console.log(child.geometry);
+
+      if(child.geometry.type == 'BufferGeometry'){
+        codeSection += `let ${geoVarName} = new THREE.${child.geometry.constructor.name}()\n`
+        codeSection += `const vertices = new Float32Array( [${[...child.geometry.attributes.position.array]}] );\n`
+        codeSection += `geometry.setAttribute( 'position', new THREE.BufferAttribute( vertices, ${child.geometry.attributes.position.itemSize} ) );;\n`
+        
+      }else{
+        let geoParams = Object.values(child.geometry.parameters)
+        geoVarName = generateName((child.geometry?.userData?.name ? child.geometry.userData.name : child.geometry.name ? child.geometry.name : child.geometry.type).replaceAll('.','_'))
+        codeSection += `let ${geoVarName} = new THREE.${child.geometry.constructor.name}(${geoParams ? geoParams.join(',') : ''})\n`
+      }
+    }
+    if(child?.material){
+      let matParam = checkWhichMaterialValuesChanged(child.material)
+      matVarName = generateName((child.material?.userData?.name ? child.material.userData.name : child.material.name ? child.material.name : child.material.type).replaceAll('.','_'))
+      codeSection += `let ${matVarName} = new THREE.${child.material.type}(${matParam ? matParam : ''})\n`
+    }
+    codeSection += `let ${meshVarName} = new THREE.${child.constructor.name}(${child?.geometry ? geoVarName : ''},${child?.material ? matVarName : ''})\n`
+    changeIfNotDefaultTransformValues(child,meshVarName)
+    codeSection += '\n'
+    sceneAddSection += `scene.add(${meshVarName})\n` 
+  }
+  }
+  function generateName(name) {
+    if(Object.hasOwn(names,name)){
+      names[name] += 1
+      return name + (+names[name] - 1)
+    }else{
+      names[name] = 1
+      return name
+    }
     
   }
+  function changeIfNotDefaultTransformValues(child,varName) {
+    if(checkIfDefaultPosition(child)){
+      codeSection += `${varName}.position.set(${child.position.x} ,${child.position.y},${child.position.z})\n`
+    }
+    if(checkIfDefaultRotation(child)){
+      codeSection += `${varName}.rotation.set(${child.rotation.x} ,${child.rotation.y},${child.rotation.z})\n`
+    }
+    if(checkIfDefaultScale(child)){
+      codeSection += `${varName}.scale.set(${child.scale.x} ,${child.scale.y},${child.scale.z})\n`
+    }
 
+  }
+  function checkIfDefaultPosition(child) {
+    return child.position.x !== 0 || child.position.y !== 0  || child.position.z !== 0 
+  }
+  function checkIfDefaultRotation(child) {
+    return child.rotation.x !== 0 || child.rotation.y !== 0  || child.rotation.z !== 0 
+  }
+  function checkIfDefaultScale(child) {
+    return child.scale.x !== 1 || child.scale.y !== 1  || child.scale.z !== 1
+  }
   function layerFiltering(e){        
       if(!e?.isCamera && !e?.userData.isLightHelper && !e?.controls && !e?.type.includes("Grid") && !e?.type.includes("Axes") && e?.name !== 'TransformControlsHelper'&& !e?.isTransformControlsRoot && !e?.userData.skip ){ 
         
@@ -3408,6 +3471,7 @@ sceneAddSection += `scene.add(${child.userData.fileExtention}.scene)\n`
       fileName = element.name
       let blobUrl = URL.createObjectURL(element)
       let extention = (element.name).split('.').pop().toLowerCase()
+      let fileNameWithoutExtention = (element.name).split('.').shift().toLowerCase()
       switch (extention) {
         case 'glb' :
         case 'gltf' :
@@ -3415,6 +3479,7 @@ sceneAddSection += `scene.add(${child.userData.fileExtention}.scene)\n`
             // e.scene.skip = true
             e.scene.userData.fileExtention = extention
             e.scene.userData.isFileImport = true
+            e.scene.userData.fileName = fileNameWithoutExtention.replaceAll('.','_')
             chosenLayer = e.scene
             mainScene.add(e.scene)
           })

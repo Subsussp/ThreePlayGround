@@ -187,11 +187,30 @@
   <div id="app"></div>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs/themes/prism-tomorrow.css">
 
-  <div id="language-jsContain" hidden>
-    <pre><code class="language-js" id="language-js">
+<div class="code-container" id="language-jsContain" hidden>
+    <button class="copy-button" type="button" aria-label="Copy code">
+    <svg class="copy-icon" viewBox="0 0 24 24" aria-hidden="true">
+        <rect x="9" y="9" width="11" height="11" rx="2"
+              fill="none" stroke="currentColor" stroke-width="2"/>
+        <path d="M6 15H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v1"
+              fill="none" stroke="currentColor" stroke-width="2"/>
+    </svg>
 
-  </code></pre>
+    <span class="copy-text">Copy</span>
 
+    <svg class="check-icon" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M5 12l4 4L19 6"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"/>
+    </svg>
+
+    <span class="copied-text">Copied</span>
+</button>
+
+    <pre><code class="language-js" id="language-js"></code></pre>
   </div>
   <script src="https://cdn.jsdelivr.net/npm/prismjs/prism.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/prismjs/components/prism-javascript.min.js"></script>
