@@ -130,6 +130,9 @@ async function createEditor(mainscene,initialization,rawObject){
   });
   const fog = new THREE.Fog(0x644600, 0.10, 50);
   const fogExpo = new THREE.FogExp2(0x644600, 0.05);
+  let exportCode;
+  let importSection = ``
+  let codeSection = ``
   let mainRenderer;
   let mainComposer;
   let fileName;
@@ -159,13 +162,13 @@ async function createEditor(mainscene,initialization,rawObject){
 })
   // delete the loaderMap after you finish
   let loaderMap = {
-    glb: GLTFLoader,
-    gltf: GLTFLoader,
-    fbx: FBXLoader,
-    obj: OBJLoader,
-    stl: STLLoader,
-    ply: PLYLoader,
-    svg: SVGLoader,
+    glb: 'GLTFLoader',
+    gltf: 'GLTFLoader',
+    fbx: 'FBXLoader',
+    obj: 'OBJLoader',
+    stl: 'STLLoader',
+    ply: 'PLYLoader',
+    svg: 'SVGLoader',
   }
 
   let settings =settingFromLocalstorage ? JSON.parse(settingFromLocalstorage) :{
@@ -981,6 +984,328 @@ async function createEditor(mainscene,initialization,rawObject){
   uniforms: { type: "object", value: {} }
 },
   };
+  const materialDefaultProperties = {
+    MeshBasicMaterial: {
+        color: 0xffffff,
+        map: null,
+        lightMap: null,
+        lightMapIntensity: 1,
+        aoMap: null,
+        aoMapIntensity: 1,
+        specularMap: null,
+        alphaMap: null,
+        envMap: null,
+        envMapRotation: [0, 0, 0],
+        combine: THREE.MultiplyOperation,
+        reflectivity: 1,
+        refractionRatio: 0.98,
+        wireframe: false,
+        wireframeLinewidth: 1,
+        wireframeLinecap: "round",
+        wireframeLinejoin: "round",
+        fog: true
+    },
+
+    MeshLambertMaterial: {
+        color: 0xffffff,
+        emissive: 0x000000,
+        emissiveIntensity: 1,
+        emissiveMap: null,
+        map: null,
+        lightMap: null,
+        lightMapIntensity: 1,
+        aoMap: null,
+        aoMapIntensity: 1,
+        bumpMap: null,
+        bumpScale: 1,
+        normalMap: null,
+        normalMapType: THREE.TangentSpaceNormalMap,
+        normalScale: [1, 1],
+        displacementMap: null,
+        displacementScale: 1,
+        displacementBias: 0,
+        alphaMap: null,
+        envMap: null,
+        envMapRotation: [0, 0, 0],
+        combine: THREE.MultiplyOperation,
+        reflectivity: 1,
+        refractionRatio: 0.98,
+        wireframe: false,
+        wireframeLinewidth: 1,
+        flatShading: false,
+        fog: true
+    },
+
+    MeshPhongMaterial: {
+        color: 0xffffff,
+        specular: 0x111111,
+        shininess: 30,
+        map: null,
+        lightMap: null,
+        lightMapIntensity: 1,
+        aoMap: null,
+        aoMapIntensity: 1,
+        emissive: 0x000000,
+        emissiveIntensity: 1,
+        emissiveMap: null,
+        bumpMap: null,
+        bumpScale: 1,
+        normalMap: null,
+        normalMapType: THREE.TangentSpaceNormalMap,
+        normalScale: [1, 1],
+        displacementMap: null,
+        displacementScale: 1,
+        displacementBias: 0,
+        specularMap: null,
+        alphaMap: null,
+        envMap: null,
+        envMapRotation: [0, 0, 0],
+        combine: THREE.MultiplyOperation,
+        reflectivity: 1,
+        refractionRatio: 0.98,
+        wireframe: false,
+        wireframeLinewidth: 1,
+        flatShading: false,
+        fog: true
+    },
+
+    MeshToonMaterial: {
+        color: 0xffffff,
+        map: null,
+        gradientMap: null,
+        lightMap: null,
+        lightMapIntensity: 1,
+        aoMap: null,
+        aoMapIntensity: 1,
+        emissive: 0x000000,
+        emissiveIntensity: 1,
+        emissiveMap: null,
+        bumpMap: null,
+        bumpScale: 1,
+        normalMap: null,
+        normalMapType: THREE.TangentSpaceNormalMap,
+        normalScale: [1, 1],
+        displacementMap: null,
+        displacementScale: 1,
+        displacementBias: 0,
+        alphaMap: null,
+        wireframe: false,
+        wireframeLinewidth: 1,
+        flatShading: false,
+        fog: true
+    },
+
+    MeshStandardMaterial: {
+        color: 0xffffff,
+        roughness: 1,
+        metalness: 0,
+        map: null,
+        lightMap: null,
+        lightMapIntensity: 1,
+        aoMap: null,
+        aoMapIntensity: 1,
+        emissive: 0x000000,
+        emissiveIntensity: 1,
+        emissiveMap: null,
+        bumpMap: null,
+        bumpScale: 1,
+        normalMap: null,
+        normalMapType: THREE.TangentSpaceNormalMap,
+        normalScale: [1, 1],
+        displacementMap: null,
+        displacementScale: 1,
+        displacementBias: 0,
+        roughnessMap: null,
+        metalnessMap: null,
+        alphaMap: null,
+        envMap: null,
+        envMapRotation: [0, 0, 0],
+        flatShading: false,
+        fog: true
+    },
+
+    MeshPhysicalMaterial: {
+        color: 0xffffff,
+        roughness: 1,
+        metalness: 0,
+        map: null,
+        lightMap: null,
+        lightMapIntensity: 1,
+        aoMap: null,
+        aoMapIntensity: 1,
+        emissive: 0x000000,
+        emissiveIntensity: 1,
+        emissiveMap: null,
+        bumpMap: null,
+        bumpScale: 1,
+        normalMap: null,
+        normalMapType: THREE.TangentSpaceNormalMap,
+        normalScale: [1, 1],
+        displacementMap: null,
+        displacementScale: 1,
+        displacementBias: 0,
+        roughnessMap: null,
+        metalnessMap: null,
+        alphaMap: null,
+        envMap: null,
+        envMapRotation: [0, 0, 0],
+
+        anisotropy: 0,
+        anisotropyRotation: 0,
+        anisotropyMap: null,
+
+        clearcoat: 0,
+        clearcoatMap: null,
+        clearcoatRoughness: 0,
+        clearcoatRoughnessMap: null,
+        clearcoatNormalMap: null,
+        clearcoatNormalScale: [1, 1],
+
+        ior: 1.5,
+
+        iridescence: 0,
+        iridescenceIOR: 1.3,
+        iridescenceThicknessRange: [100, 400],
+        iridescenceMap: null,
+        iridescenceThicknessMap: null,
+
+        sheen: 0,
+        sheenColor: 0x000000,
+        sheenColorMap: null,
+        sheenRoughness: 1,
+        sheenRoughnessMap: null,
+
+        specularIntensity: 1,
+        specularColor: 0xffffff,
+        specularColorMap: null,
+        specularIntensityMap: null,
+
+        transmission: 0,
+        transmissionMap: null,
+
+        thickness: 0,
+        thicknessMap: null,
+
+        attenuationDistance: Infinity,
+        attenuationColor: 0xffffff,
+
+        dispersion: 0,
+
+        flatShading: false,
+        fog: true
+    },
+
+    MeshMatcapMaterial: {
+        color: 0xffffff,
+        matcap: null,
+        map: null,
+        bumpMap: null,
+        bumpScale: 1,
+        normalMap: null,
+        normalMapType: THREE.TangentSpaceNormalMap,
+        normalScale: [1, 1],
+        displacementMap: null,
+        displacementScale: 1,
+        displacementBias: 0,
+        alphaMap: null,
+        flatShading: false,
+        fog: true
+    },
+
+    MeshNormalMaterial: {
+        flatShading: false,
+        wireframe: false,
+        wireframeLinewidth: 1,
+        fog: true,
+        bumpMap: null,
+        bumpScale: 1,
+        normalMap: null,
+        normalMapType: THREE.TangentSpaceNormalMap,
+        normalScale: [1, 1],
+        displacementMap: null,
+        displacementScale: 1,
+        displacementBias: 0
+    },
+
+    MeshDepthMaterial: {
+        depthPacking: THREE.BasicDepthPacking,
+        displacementMap: null,
+        displacementScale: 1,
+        displacementBias: 0,
+        wireframe: false,
+        wireframeLinewidth: 1,
+        fog: true
+    },
+
+    MeshDistanceMaterial: {
+        displacementMap: null,
+        displacementScale: 1,
+        displacementBias: 0,
+        fog: true
+    },
+
+    PointsMaterial: {
+        color: 0xffffff,
+        map: null,
+        alphaMap: null,
+        size: 1,
+        sizeAttenuation: true,
+        fog: true
+    },
+
+    SpriteMaterial: {
+        color: 0xffffff,
+        map: null,
+        alphaMap: null,
+        rotation: 0,
+        sizeAttenuation: true,
+        fog: true
+    },
+
+    LineBasicMaterial: {
+        color: 0xffffff,
+        linewidth: 1,
+        linecap: "round",
+        linejoin: "round"
+    },
+
+    LineDashedMaterial: {
+        color: 0xffffff,
+        linewidth: 1,
+        scale: 1,
+        dashSize: 3,
+        gapSize: 1
+    },
+
+    ShadowMaterial: {
+        color: 0x000000,
+        fog: true
+    },
+
+    ShaderMaterial: {
+        uniforms: {},
+        vertexShader: "",
+        fragmentShader: "",
+        linewidth: 1,
+        wireframe: false,
+        wireframeLinewidth: 1,
+        lights: false,
+        clipping: false,
+        fog: false
+    },
+
+    RawShaderMaterial: {
+        uniforms: {},
+        vertexShader: "",
+        fragmentShader: "",
+        linewidth: 1,
+        wireframe: false,
+        wireframeLinewidth: 1,
+        lights: false,
+        clipping: false,
+        fog: false
+    }
+};
   const effects = {
 
       bloom: {
@@ -2887,27 +3212,81 @@ createSceneSettings()
     TC.update()  
   }
 
+
   function handleExport(child) {
-    code = ``
     if(child.constructor.name && Object.hasOwn(THREE,child.constructor.name)){
+        if(child?.userData?.isFileImport && child.isGroup){
+          handleImportedSceneExport(child)
+          return null
+        }
         if(child.isGroup){
-          code += `let group = new THREE.group()\n`
+          codeSection += `let group = new THREE.group()\n`
           child.children.forEach((groupChild)=>handleExport(groupChild))
           return
         }
 
-        
-        let params = Object.values(child?.geometry.parameters)
-        if(child?.geometry){
-          code += `let ${child.geometry} = new THREE.${child.geometry.constructor.name}(${params ? params.join(',') : ''})\n`
+        console.log(child);
+        console.log(child.geometry);
+        console.log(child.material);
+      
+        if(child?.isMesh){
+          let geoVarName;
+          let matVarName;
+          if(child?.geometry){
+            let geoParams = Object.values(child.geometry.parameters)
+            geoVarName = child.geometry?.userData?.name ? child.geometry.userData.name : child.geometry.name ? child.geometry.name : child.geometry.type
+            codeSection += `let ${geoVarName} = new THREE.${child.geometry.constructor.name}(${geoParams ? geoParams.join(',') : ''})\n`
+          }
+          if(child?.material){
+            let matParam = JSON.stringify(checkWhichMaterialValuesChanged(child.material))
+            matVarName = child.material?.userData?.name ? child.material.userData.name : child.material.name ? child.material.name : child.material.type
+            codeSection += `let ${matVarName} = new THREE.${child.material.type}(${matParam ? matParam : ''})\n`
+          }
+          codeSection += `let ${child?.userData?.name ? child.userData.name : child.name ? child.name : child.type} = new THREE.${child.constructor.name}(${child?.geometry ? geoVarName : ''},${child?.material ? matVarName : ''})\n`
         }
-        code += `let ${child.constructor.name} = new THREE.${child.constructor.name}()\n`
       
       }
   }
+  function checkWhichMaterialValuesChanged(material) {
+    let finalParamObject = {};
+    Object.entries(materialDefaultProperties[material.type]).forEach(element => {
+      let propertyName = element[0]
+      let propertyValues = element[1]
+      let MatValue = material[propertyName];
+      let valueText;
 
-  function handleImportedSceneExport(){
-
+      
+      if(MatValue?.isVector2 ||MatValue?.isVector3 || MatValue?.isVector4 ||MatValue?.isEuler){
+        if(MatValue?.isVector4 || MatValue?.isEuler){
+          MatValue = MatValue.toArray().slice(0,3)
+        }else{ 
+          MatValue = MatValue.toArray()
+        }
+      }
+      if(MatValue?.isColor){
+        MatValue = MatValue.getHex()
+      }
+      if(Array.isArray(MatValue) && Array.isArray(propertyValues)){
+        console.log(MatValue);
+        console.log(propertyValues);
+        if(!checkIfArraysEqual(MatValue,propertyValues)){
+          finalParamObject[propertyName] = propertyValues
+        }
+      }
+      else if(MatValue !== propertyValues){
+        finalParamObject[propertyName] = propertyValues
+      }
+    });
+    return finalParamObject
+  }
+  function checkIfArraysEqual(arr,arr1){
+    return arr.length === arr1.length && arr.every((value,i)=>value == arr1[i])
+  }
+  function handleImportedSceneExport(child){
+    importSection += `import { ${loaderMap[child.userData.fileExtention]} } from 'three/addons/loaders/${loaderMap[child.userData.fileExtention]}.js';\n`
+    codeSection += `let loader = THREE.${loaderMap[child.userData.fileExtention]}()
+let ${child.userData.fileExtention} = await loader.loadAsync("./assets/${child.userData.name}")
+scene.add(${child.userData.fileExtention}.scene)\n` 
   }
 
   function handleMeshExport(){
@@ -2986,6 +3365,8 @@ createSceneSettings()
         case 'gltf' :
           let glbObj = loader.load(blobUrl,(e)=>{
             // e.scene.skip = true
+            e.scene.userData.fileExtention = extention
+            e.scene.userData.isFileImport = true
             chosenLayer = e.scene
             mainScene.add(e.scene)
           })
@@ -3343,12 +3724,14 @@ createSceneSettings()
     }
 
     // Export Code 
-    let code;
     document.getElementById('export-code').addEventListener('click',(event)=>{
       document.getElementById('language-jsContain').hidden = false
+      exportCode = ``
       mainScene.children.forEach(handleExport)
+      exportCode += importSection 
+      exportCode += codeSection 
       let codeExportElement = document.getElementById('language-js')
-      codeExportElement.textContent = code
+      codeExportElement.textContent = exportCode
       Prism.highlightElement(codeExportElement);
     })
 

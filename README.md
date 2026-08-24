@@ -11,6 +11,8 @@ a web-based 3D editor built from scratch on top of [**Three.js**
 - Export Three js Code 
 - Custom Presets (Unfinished)
 - 3D models import 
+- Layers control
+
 # How to use it 
 You can simply visit the website :) 
 
