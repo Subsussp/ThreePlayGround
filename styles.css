@@ -392,19 +392,33 @@ textarea {
 .menu-options{
     position: fixed;
     z-index: 1;
-    display: none;
+    display: none;   
     top: 35px;
     padding: 5px 0;
     background: #111;
     min-width: 150px;
     max-height: calc(100vh - 80px);
-    overflow: auto;
+    /* overflow: auto; */
+}
+.submenu{
+    position: relative;
+
 }
 .menu-tab > :nth-child(2) {
     display: none;
 }
+.submenu > :nth-child(1) {
+    left: 100%;
+    z-index: 100;
+    margin-top: -5px;
+    top: 0;
+    position: absolute!important;
+}
 .menu-title{
     padding: 5px 10px;
+}
+.submenu:hover > :nth-child(1) {
+    display: inline-block;
 }
 .menu-tab:hover > :nth-child(2) {
     display: inline-block;
@@ -477,11 +491,15 @@ textarea {
 }
 .menu-option:hover{
     background-color:#08f;
+    color: white;
 }
 .optrans {
     width: 450px !important;
 }
-
+.submenu::after {
+    content: '⏵';
+    float: right;
+}
 #language-jsContain {
     position: absolute;
     top: 50%;
