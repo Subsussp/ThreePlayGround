@@ -131,8 +131,9 @@ async function createEditor(mainscene,initialization,rawObject){
   const fog = new THREE.Fog(0x644600, 0.10, 50);
   const fogExpo = new THREE.FogExp2(0x644600, 0.05);
   let exportCode;
-  let importSection = ``
-  let codeSection = ``
+  let importSection;
+  let codeSection;
+  let sceneAddSection;
   let mainRenderer;
   let mainComposer;
   let fileName;
@@ -984,7 +985,7 @@ async function createEditor(mainscene,initialization,rawObject){
   uniforms: { type: "object", value: {} }
 },
   };
-  const materialDefaultProperties = {
+const materialDefaultProperties = {
     MeshBasicMaterial: {
         color: 0xffffff,
         map: null,
@@ -1003,7 +1004,9 @@ async function createEditor(mainscene,initialization,rawObject){
         wireframeLinewidth: 1,
         wireframeLinecap: "round",
         wireframeLinejoin: "round",
-        fog: true
+        fog: true,
+        opacity: 1,
+        transparent: false
     },
 
     MeshLambertMaterial: {
@@ -1033,7 +1036,9 @@ async function createEditor(mainscene,initialization,rawObject){
         wireframe: false,
         wireframeLinewidth: 1,
         flatShading: false,
-        fog: true
+        fog: true,
+        opacity: 1,
+        transparent: false
     },
 
     MeshPhongMaterial: {
@@ -1066,7 +1071,9 @@ async function createEditor(mainscene,initialization,rawObject){
         wireframe: false,
         wireframeLinewidth: 1,
         flatShading: false,
-        fog: true
+        fog: true,
+        opacity: 1,
+        transparent: false
     },
 
     MeshToonMaterial: {
@@ -1092,7 +1099,9 @@ async function createEditor(mainscene,initialization,rawObject){
         wireframe: false,
         wireframeLinewidth: 1,
         flatShading: false,
-        fog: true
+        fog: true,
+        opacity: 1,
+        transparent: false
     },
 
     MeshStandardMaterial: {
@@ -1121,7 +1130,9 @@ async function createEditor(mainscene,initialization,rawObject){
         envMap: null,
         envMapRotation: [0, 0, 0],
         flatShading: false,
-        fog: true
+        fog: true,
+        opacity: 1,
+        transparent: false
     },
 
     MeshPhysicalMaterial: {
@@ -1192,7 +1203,9 @@ async function createEditor(mainscene,initialization,rawObject){
         dispersion: 0,
 
         flatShading: false,
-        fog: true
+        fog: true,
+        opacity: 1,
+        transparent: false
     },
 
     MeshMatcapMaterial: {
@@ -1209,7 +1222,9 @@ async function createEditor(mainscene,initialization,rawObject){
         displacementBias: 0,
         alphaMap: null,
         flatShading: false,
-        fog: true
+        fog: true,
+        opacity: 1,
+        transparent: false
     },
 
     MeshNormalMaterial: {
@@ -1224,7 +1239,9 @@ async function createEditor(mainscene,initialization,rawObject){
         normalScale: [1, 1],
         displacementMap: null,
         displacementScale: 1,
-        displacementBias: 0
+        displacementBias: 0,
+        opacity: 1,
+        transparent: false
     },
 
     MeshDepthMaterial: {
@@ -1234,14 +1251,18 @@ async function createEditor(mainscene,initialization,rawObject){
         displacementBias: 0,
         wireframe: false,
         wireframeLinewidth: 1,
-        fog: true
+        fog: true,
+        opacity: 1,
+        transparent: false
     },
 
     MeshDistanceMaterial: {
         displacementMap: null,
         displacementScale: 1,
         displacementBias: 0,
-        fog: true
+        fog: true,
+        opacity: 1,
+        transparent: false
     },
 
     PointsMaterial: {
@@ -1250,7 +1271,9 @@ async function createEditor(mainscene,initialization,rawObject){
         alphaMap: null,
         size: 1,
         sizeAttenuation: true,
-        fog: true
+        fog: true,
+        opacity: 1,
+        transparent: false
     },
 
     SpriteMaterial: {
@@ -1259,14 +1282,18 @@ async function createEditor(mainscene,initialization,rawObject){
         alphaMap: null,
         rotation: 0,
         sizeAttenuation: true,
-        fog: true
+        fog: true,
+        opacity: 1,
+        transparent: false
     },
 
     LineBasicMaterial: {
         color: 0xffffff,
         linewidth: 1,
         linecap: "round",
-        linejoin: "round"
+        linejoin: "round",
+        opacity: 1,
+        transparent: false
     },
 
     LineDashedMaterial: {
@@ -1274,12 +1301,16 @@ async function createEditor(mainscene,initialization,rawObject){
         linewidth: 1,
         scale: 1,
         dashSize: 3,
-        gapSize: 1
+        gapSize: 1,
+        opacity: 1,
+        transparent: false
     },
 
     ShadowMaterial: {
         color: 0x000000,
-        fog: true
+        fog: true,
+        opacity: 1,
+        transparent: true
     },
 
     ShaderMaterial: {
@@ -1291,7 +1322,9 @@ async function createEditor(mainscene,initialization,rawObject){
         wireframeLinewidth: 1,
         lights: false,
         clipping: false,
-        fog: false
+        fog: false,
+        opacity: 1,
+        transparent: false
     },
 
     RawShaderMaterial: {
@@ -1303,7 +1336,9 @@ async function createEditor(mainscene,initialization,rawObject){
         wireframeLinewidth: 1,
         lights: false,
         clipping: false,
-        fog: false
+        fog: false,
+        opacity: 1,
+        transparent: false
     }
 };
   const effects = {
@@ -3005,7 +3040,7 @@ createSceneSettings()
         if(!initialize)propValue = '#' + propValue.getHexString()
         let color = createColorInput(propValue)
         color.addEventListener('input',(e)=>{
-          objectMaterial['color'].set(e.target.value)
+          objectMaterial[propertyName].set(e.target.value)
         })
          row.appendChild(color)
       }
@@ -3019,7 +3054,6 @@ createSceneSettings()
           let Ymulti = initialMouseYPosition - event.clientY
           initialMouseXPosition = event.clientX 
           initialMouseYPosition = event.clientY
-          console.log(property[1].min , property[1].max);
           numberInputValueControl(event,number,0.0020, property[1].min , property[1].max,'',Xmulti,Ymulti)     
           objectMaterial[propertyName] = +number.value   
         }
@@ -3036,6 +3070,13 @@ createSceneSettings()
       }
       if(property[1].type === "boolean"){
         let boolean = createCheckBoxInput(object.material,property[0])
+        boolean.addEventListener('input',(e)=>{
+          object.material[propertyName] = e.target.checked
+          object.material.needsUpdate = true;              
+
+        })
+        
+        boolean.checked =  objectMaterial[propertyName] 
         row.appendChild(boolean)
       }
       if(property[1].type === "select"){
@@ -3225,11 +3266,11 @@ createSceneSettings()
           return
         }
 
-        console.log(child);
-        console.log(child.geometry);
+        // console.log(child);
         console.log(child.material);
       
         if(child?.isMesh){
+          let meshVarName = child?.userData?.name ? child.userData.name : child.name ? child.name : child.type;
           let geoVarName;
           let matVarName;
           if(child?.geometry){
@@ -3238,45 +3279,52 @@ createSceneSettings()
             codeSection += `let ${geoVarName} = new THREE.${child.geometry.constructor.name}(${geoParams ? geoParams.join(',') : ''})\n`
           }
           if(child?.material){
-            let matParam = JSON.stringify(checkWhichMaterialValuesChanged(child.material))
+            let matParam = checkWhichMaterialValuesChanged(child.material)
             matVarName = child.material?.userData?.name ? child.material.userData.name : child.material.name ? child.material.name : child.material.type
             codeSection += `let ${matVarName} = new THREE.${child.material.type}(${matParam ? matParam : ''})\n`
           }
-          codeSection += `let ${child?.userData?.name ? child.userData.name : child.name ? child.name : child.type} = new THREE.${child.constructor.name}(${child?.geometry ? geoVarName : ''},${child?.material ? matVarName : ''})\n`
+          codeSection += `let ${meshVarName} = new THREE.${child.constructor.name}(${child?.geometry ? geoVarName : ''},${child?.material ? matVarName : ''})\n`
+          sceneAddSection += `scene.add(${meshVarName})\n` 
         }
       
       }
   }
+
   function checkWhichMaterialValuesChanged(material) {
-    let finalParamObject = {};
+    let finalParamObject = '{\n';
     Object.entries(materialDefaultProperties[material.type]).forEach(element => {
       let propertyName = element[0]
       let propertyValues = element[1]
       let MatValue = material[propertyName];
-      let valueText;
+      let valueText = null;
 
+      console.log(propertyName);
+      console.log(propertyValues);
+      console.log(MatValue);
       
-      if(MatValue?.isVector2 ||MatValue?.isVector3 || MatValue?.isVector4 ||MatValue?.isEuler){
-        if(MatValue?.isVector4 || MatValue?.isEuler){
+      if(MatValue?.isVector2 ||MatValue?.isVector3 || MatValue?.isEuler){
+        if(MatValue?.isEuler){
           MatValue = MatValue.toArray().slice(0,3)
         }else{ 
           MatValue = MatValue.toArray()
         }
       }
+
       if(MatValue?.isColor){
+        valueText = `0x${MatValue.getHexString()}`
         MatValue = MatValue.getHex()
       }
+
       if(Array.isArray(MatValue) && Array.isArray(propertyValues)){
-        console.log(MatValue);
-        console.log(propertyValues);
         if(!checkIfArraysEqual(MatValue,propertyValues)){
-          finalParamObject[propertyName] = propertyValues
+          finalParamObject += `${propertyName}: ${valueText ?? MatValue}\n`
         }
       }
       else if(MatValue !== propertyValues){
-        finalParamObject[propertyName] = propertyValues
+        finalParamObject += `${propertyName}: ${valueText ?? MatValue}\n`
       }
     });
+    finalParamObject += '}'
     return finalParamObject
   }
   function checkIfArraysEqual(arr,arr1){
@@ -3285,8 +3333,8 @@ createSceneSettings()
   function handleImportedSceneExport(child){
     importSection += `import { ${loaderMap[child.userData.fileExtention]} } from 'three/addons/loaders/${loaderMap[child.userData.fileExtention]}.js';\n`
     codeSection += `let loader = THREE.${loaderMap[child.userData.fileExtention]}()
-let ${child.userData.fileExtention} = await loader.loadAsync("./assets/${child.userData.name}")
-scene.add(${child.userData.fileExtention}.scene)\n` 
+let ${child.userData.fileExtention} = await loader.loadAsync("./assets/${child.userData.name}")\n`
+sceneAddSection += `scene.add(${child.userData.fileExtention}.scene)\n` 
   }
 
   function handleMeshExport(){
@@ -3727,9 +3775,13 @@ scene.add(${child.userData.fileExtention}.scene)\n`
     document.getElementById('export-code').addEventListener('click',(event)=>{
       document.getElementById('language-jsContain').hidden = false
       exportCode = ``
+      importSection = ``
+      codeSection = ``
+      sceneAddSection = ``
       mainScene.children.forEach(handleExport)
       exportCode += importSection 
       exportCode += codeSection 
+      exportCode += sceneAddSection 
       let codeExportElement = document.getElementById('language-js')
       codeExportElement.textContent = exportCode
       Prism.highlightElement(codeExportElement);

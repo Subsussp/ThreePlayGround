@@ -50,8 +50,11 @@ sprite.scale.set(200, 200, 1)
 // scene.add( sprite );
 // mesh.rotation.x = Math.PI / 2
 // mesh.scale.setX()
-
-scene.add(sprite)
+let CapsuleGeometry = new THREE.CapsuleGeometry(1,1,4,8,1)
+let MeshStandardMaterial = new THREE.MeshStandardMaterial({"color":11868672})
+let Capsule = new THREE.Mesh(CapsuleGeometry,MeshStandardMaterial)
+scene.add(Capsule)
+// scene.add(sprite)
 scene.add(lightHelper)
 scene.add(camera)
 
