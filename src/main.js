@@ -3966,33 +3966,46 @@ console.log(child.geometry);
     let x = (e.clientX / (window.innerWidth / 2) - 1 )
     let y = -(e.clientY / (window.innerHeight / 2) - 1 )
     rayCast.setFromCamera(new THREE.Vector2(x,y),mainCamera)
-    let newScene = mainScene.clone()
-    newScene.children = mainScene.children.filter((chlid)=>chlid.type === "Mesh") ?? []
-    let intersectObjects = rayCast.intersectObject(newScene)
-    console.log(intersectObjects);
+    mainScene.children.forEach((chlid)=>{
+      if(chlid.type === "Mesh"){
+        
+        console.log(chlid);
+        let intersectObjects = rayCast.intersectObject(chlid,false)
+        console.log(intersectObjects);
+        
+        intersectObjects.forEach((point)=>{
+          let cords = checkIfValidPoint(point.object,point.point);
+          let index = cords[3]
+          let positions = point.object.geometry.attributes.position.array
+          if(!checkIfPointExist(mainScene,cords) && cords){
+            let buffer = new THREE.BufferGeometry()
+            let vertices = new Float32Array([
+              cords[0],cords[1],cords[2]
+            ])
+            window.addEventListener('mousedown',(event)=>{
+              window.addEventListener('mousemove',(event)=>{
+                  let x = (e.clientX / (window.innerWidth / 2) - 1 )
+                  let y = -(e.clientY / (window.innerHeight / 2) - 1 )
+                positions.setXYZ(index,cords[0] + x,cords[1] + y,cords[2] + .9)
+                positions.needsUpdate = true
+              })
+            })
+            buffer.setAttribute('position', new THREE.BufferAttribute(vertices, 3))
+            let points = new THREE.Points( buffer,new THREE.PointsMaterial({color: 'red',
+        size: 0.2}))
+            points.userData.skip = true
+            point.object.add(points)
+            }
     
-    intersectObjects.forEach((point)=>{
-      let cords = checkIfValidPoint(point.object,point.point);
-      
-      if(!checkIfPointExist(mainScene,point.point) && cords){
-        let buffer = new THREE.BufferGeometry()
-        let vertices = new Float32Array([
-          cords[0],cords[1],cords[2]
-        ])
-        buffer.setAttribute('position', new THREE.BufferAttribute(vertices, 3))
-        let points = new THREE.Points( buffer,new THREE.PointsMaterial({color: 'red',
-    size: 0.2}))
-        points.userData.skip = true
-        point.object.add(points)
-        }
-
+        })
+      }
     })
     
   })
 }
-function checkIfPointExist(mainScene,point) {
+function checkIfPointExist(mainScene,cords) {
   mainScene.children.forEach((child)=>{
-    if(child.type == 'Points' && point.x == child.position.x && point.y == child.position.y && point.z == child.position.z){
+    if(child.type == 'Points' && cords.x == child.position.x && cords.y == child.position.y && cords.z == child.position.z){
       return true
     }
     return false
@@ -4011,7 +4024,7 @@ function checkIfValidPoint(object,point) {
       && (Math.abs(point.y - positions[i + 1]) < .2)
     && (Math.abs(point.z - positions[i + 2]) < .2))
     {
-      cords = [positions[i],positions[i + 1],positions[i + 2]]
+      cords = [positions[i],positions[i + 1],positions[i + 2],i]
       found = true
       break
     }
