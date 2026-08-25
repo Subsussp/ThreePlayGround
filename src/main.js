@@ -3969,27 +3969,22 @@ console.log(child.geometry);
     mainScene.children.forEach((chlid)=>{
       if(chlid.type === "Mesh"){
         
-        console.log(chlid);
         let intersectObjects = rayCast.intersectObject(chlid,false)
-        console.log(intersectObjects);
         
         intersectObjects.forEach((point)=>{
           let cords = checkIfValidPoint(point.object,point.point);
           let index = cords[3]
-          let positions = point.object.geometry.attributes.position.array
+          let positions = point.object.geometry.attributes.position
           if(!checkIfPointExist(mainScene,cords) && cords){
             let buffer = new THREE.BufferGeometry()
             let vertices = new Float32Array([
               cords[0],cords[1],cords[2]
             ])
-            window.addEventListener('mousedown',(event)=>{
-              window.addEventListener('mousemove',(event)=>{
-                  let x = (e.clientX / (window.innerWidth / 2) - 1 )
-                  let y = -(e.clientY / (window.innerHeight / 2) - 1 )
-                positions.setXYZ(index,cords[0] + x,cords[1] + y,cords[2] + .9)
-                positions.needsUpdate = true
-              })
-            })
+            let x = (e.clientX / (window.innerWidth / 2) - 1 )
+            let y = -(e.clientY / (window.innerHeight / 2) - 1 )
+            point.object.geometry.attributes.position.setXYZ(index,cords[0] + x * 10,cords[1] + y * 10,cords[2] + .9)
+            point.object.geometry.attributes.position.needsUpdate = true
+             controls.enabled = false
             buffer.setAttribute('position', new THREE.BufferAttribute(vertices, 3))
             let points = new THREE.Points( buffer,new THREE.PointsMaterial({color: 'red',
         size: 0.2}))
