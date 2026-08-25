@@ -3973,7 +3973,7 @@ console.log(child.geometry);
   mainCamera.getWorldDirection(cameraDirection);
 
   window.addEventListener(('mousemove'),(e)=>{
-    if(!insideCanvas())return
+    if(!insideCanvas(e.clientX))return
     let x = (e.clientX / (window.innerWidth / 2) - 1 )
     let y = -(e.clientY / (window.innerHeight / 2) - 1 )
     rayCast.setFromCamera(new THREE.Vector2(x,y),mainCamera)
