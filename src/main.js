@@ -3961,6 +3961,9 @@ console.log(child.geometry);
         }
       })
   }
+let mouseIsDown = false
+let index;
+let instantIndex;
 
   window.addEventListener(('mousemove'),(e)=>{
     let x = (e.clientX / (window.innerWidth / 2) - 1 )
@@ -3973,18 +3976,31 @@ console.log(child.geometry);
         
         intersectObjects.forEach((point)=>{
           let cords = checkIfValidPoint(point.object,point.point);
-          let index = cords[3]
+          instantIndex = cords[3]
           let positions = point.object.geometry.attributes.position
-          if(!checkIfPointExist(mainScene,cords) && cords){
+          if(mouseIsDown && cords){
+            index == undefined && (index = instantIndex)
+            // console.log(index);
+            // console.log(point.object);
+            controls.enabled = false
+            
+            point.object.children.forEach((childpoint)=>{
+              // console.log(childpoint);
+              if(childpoint.position.x == cords[0] && childpoint.position.y == cords[1] && childpoint.position.z == cords[2]){
+                  childpoint.position.set(cords[0] ,cords[1] + y * 10,cords[2])
+              }
+            })
+            point.object.geometry.attributes.position.setXYZ(index,cords[0] ,cords[1] + y * 10,cords[2])
+            point.object.geometry.attributes.position.needsUpdate = true
+          }
+          else if(!checkIfPointExist(mainScene,cords) && cords ){
             let buffer = new THREE.BufferGeometry()
             let vertices = new Float32Array([
               cords[0],cords[1],cords[2]
             ])
             let x = (e.clientX / (window.innerWidth / 2) - 1 )
             let y = -(e.clientY / (window.innerHeight / 2) - 1 )
-            point.object.geometry.attributes.position.setXYZ(index,cords[0] + x * 10,cords[1] + y * 10,cords[2] + .9)
-            point.object.geometry.attributes.position.needsUpdate = true
-             controls.enabled = false
+
             buffer.setAttribute('position', new THREE.BufferAttribute(vertices, 3))
             let points = new THREE.Points( buffer,new THREE.PointsMaterial({color: 'red',
         size: 0.2}))
@@ -3997,14 +4013,28 @@ console.log(child.geometry);
     })
     
   })
+  window.addEventListener('mousedown',(event)=>{
+    mouseIsDown= true
+    index = instantIndex
+  })
+  window.addEventListener('mouseup',(event)=>{
+    controls.enabled = true
+    mouseIsDown= false})
 }
 function checkIfPointExist(mainScene,cords) {
+  let exist = false
   mainScene.children.forEach((child)=>{
-    if(child.type == 'Points' && cords.x == child.position.x && cords.y == child.position.y && cords.z == child.position.z){
-      return true
+    console.log(child);
+    
+    if(child?.children){
+      child.children.forEach((subChild)=>{
+        if(subChild.type == 'Points' && cords.x == subChild.position.x && cords.y == subChild.position.y && cords.z == subChild.position.z){
+          exist = true
+        }
+      })
     }
-    return false
-  })
+    })
+  return exist
 }
 
 function checkIfValidPoint(object,point) {
@@ -4019,7 +4049,7 @@ function checkIfValidPoint(object,point) {
       && (Math.abs(point.y - positions[i + 1]) < .2)
     && (Math.abs(point.z - positions[i + 2]) < .2))
     {
-      cords = [positions[i],positions[i + 1],positions[i + 2],i]
+      cords = [positions[i],positions[i + 1],positions[i + 2],(i / 3)]
       found = true
       break
     }
