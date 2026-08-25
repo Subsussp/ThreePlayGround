@@ -2044,7 +2044,7 @@ const materialDefaultProperties = {
         function checkintersect(e){
           let x = (e.clientX / (window.innerWidth / 2) - 1 )
           let y = -(e.clientY / (window.innerHeight / 2) - 1 )
-          if(document.getElementById('optionMenu').getBoundingClientRect().x > e.clientX){
+          if(insideCanvas(e.clientX)){
             panelEle.classList.remove('optrans')
             rayCast.setFromCamera(new THREE.Vector2(x,y),mainCamera)
             let filters = [];
@@ -3973,6 +3973,7 @@ console.log(child.geometry);
   mainCamera.getWorldDirection(cameraDirection);
 
   window.addEventListener(('mousemove'),(e)=>{
+    if(!insideCanvas())return
     let x = (e.clientX / (window.innerWidth / 2) - 1 )
     let y = -(e.clientY / (window.innerHeight / 2) - 1 )
     rayCast.setFromCamera(new THREE.Vector2(x,y),mainCamera)
@@ -3985,7 +3986,7 @@ console.log(child.geometry);
             point = new THREE.Vector3();
             dragPlane.setFromNormalAndCoplanarPoint(
             cameraDirection,
-            new THREE.Vector3(0,0,0)
+            referencePoint
           );
             rayCast.ray.intersectPlane(dragPlane, point);
         }
@@ -3998,37 +3999,30 @@ console.log(child.geometry);
  
           if(mouseIsDown){
             index == undefined && (index = instantIndex)
-            console.log(index);
             controls.enabled = false
+            console.log(cords);
+            console.log(referencePoint);
+            point = new THREE.Vector3();
+            dragPlane.setFromNormalAndCoplanarPoint(
+            cameraDirection,
+            referencePoint
+          );
 
-            intersect.object.children.forEach((childpoint)=>{
-              let pointCords = childpoint.geometry.attributes.position.array
-              if(pointCords[0] == cords[0] && pointCords[1] == cords[1] && pointCords[2] == cords[2]){
-                  childpoint.geometry.attributes.position.setXYZ(0,point.x ,point.y,point.z)
-                  childpoint.geometry.attributes.position.needsUpdate = true
-                }
-              })
+            rayCast.ray.intersectPlane(dragPlane, point);
+            // visual feedback (points) update 
+            // intersect.object.children.forEach((childpoint)=>{
+            //   let pointCords = childpoint.geometry.attributes.position.array
+            //   if(pointCords[0] == cords[0] && pointCords[1] == cords[1] && pointCords[2] == cords[2]){
+            //       childpoint.geometry.attributes.position.setXYZ(0,point.x ,point.y,point.z)
+            //       childpoint.geometry.attributes.position.needsUpdate = true
+            //     }
+            //   })
             for (let i = 0; i < index.length; i++) {              
                 intersect.object.geometry.attributes.position.setXYZ(index[i],point.x ,point.y,point.z)
-                intersect.object.geometry.attributes.position.needsUpdate = true
-            }
+                intersect.object.geometry.attributes.position.needsUpdate = true;
+                          }
 
           }
-          if(!checkIfPointExist(mainScene,cords) && cords && !mouseIsDown){
-            let buffer = new THREE.BufferGeometry()
-            let vertices = new Float32Array([
-              cords[0],cords[1],cords[2]
-            ])
-            let x = (e.clientX / (window.innerWidth / 2) - 1 )
-            let y = -(e.clientY / (window.innerHeight / 2) - 1 )
-
-            buffer.setAttribute('position', new THREE.BufferAttribute(vertices, 3))
-            let points = new THREE.Points( buffer,new THREE.PointsMaterial({color: 'red',
-        size: 0.2}))
-            points.userData.customPoint = true
-            points.userData.skip = true
-            // intersect.object.add(points)
-            }
     
         })
         }
@@ -4041,14 +4035,14 @@ console.log(child.geometry);
           
             index == undefined && (index = instantIndex)
             controls.enabled = false
-
-            child.children.forEach((childpoint)=>{
-              let pointCords = childpoint.geometry.attributes.position.array
-              if(pointCords[0] == cords[0] && pointCords[1] == cords[1] && pointCords[2] == cords[2]){
-                  childpoint.geometry.attributes.position.setXYZ(0,point.x ,point.y,point.z)
-                  childpoint.geometry.attributes.position.needsUpdate = true
-                }
-              })
+            // visual feedback (points) update 
+            // child.children.forEach((childpoint)=>{
+            //   let pointCords = childpoint.geometry.attributes.position.array
+            //   if(pointCords[0] == cords[0] && pointCords[1] == cords[1] && pointCords[2] == cords[2]){
+            //       childpoint.geometry.attributes.position.setXYZ(0,point.x ,point.y,point.z)
+            //       childpoint.geometry.attributes.position.needsUpdate = true
+            //     }
+            //   })
             for (let i = 0; i < index.length; i++) {              
                 child.geometry.attributes.position.setXYZ(index[i],point.x ,point.y,point.z)
                 child.geometry.attributes.position.needsUpdate = true
@@ -4071,12 +4065,20 @@ console.log(child.geometry);
     firstMouseDown = false
   })
   window.addEventListener('mousedown',(event)=>{
+    if(!insideCanvas(event.clientX))return
     mouseIsDown= true
-    referencePoint = new THREE.Vector3(instantCords[0],instantCords[1],instantCords[2])
-    index = instantIndex
+    firstMouseDown = true
+    if(instantCords){      
+      referencePoint = new THREE.Vector3(instantCords[0],instantCords[1],instantCords[2])
+    }
+    if(instantIndex){
+      index = instantIndex
+    }
   })
   window.addEventListener('mouseup',(event)=>{
+    if(!insideCanvas(event.clientX))return
     controls.enabled = true
+    firstMouseDown = true
     mouseIsDown= false})
 }
 function checkIfPointExist(mainScene,cords) {
@@ -4116,4 +4118,7 @@ function checkIfValidPoint(object,point) {
   if(found)return cords
   return false
       
+}
+function insideCanvas(mouseX){
+  return document.getElementById('optionMenu').getBoundingClientRect().x > mouseX
 }
