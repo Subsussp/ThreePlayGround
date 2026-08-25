@@ -3938,30 +3938,85 @@ console.log(child.geometry);
     }
 
 }
-function disposeEverything() {
-  mainComposer = null
-  effectsNames = null
-  chosenLayer = null
-  document.getElementById('panelContainer') && document.getElementById('panelContainer').remove()
-  hideTransformAndSelectionBox()  
-    if(TC)TC.detach();
-    ([...mainScene.children]).forEach((child)=>{
-      if(child?.isGroup){
-        [...child.children].forEach((groupChild)=>{
-          let layer = layerContainer.querySelector(`[data-uuid="${groupChild.uuid}"]`)
-          if(layer)layer.remove()
-          groupChild.removeFromParent()        
+  function disposeEverything() {
+    mainComposer = null
+    effectsNames = null
+    chosenLayer = null
+    document.getElementById('panelContainer') && document.getElementById('panelContainer').remove()
+    hideTransformAndSelectionBox()  
+      if(TC)TC.detach();
+      ([...mainScene.children]).forEach((child)=>{
+        if(child?.isGroup){
+          [...child.children].forEach((groupChild)=>{
+            let layer = layerContainer.querySelector(`[data-uuid="${groupChild.uuid}"]`)
+            if(layer)layer.remove()
+            groupChild.removeFromParent()        
+          }
+          )
         }
-        )
-      }
-      if(!child?.isTransformControlsRoot){
-        let layer = layerContainer.querySelector(`[data-uuid="${child.uuid}"]`)
-        if(layer)layer.remove()
-        child.removeFromParent()
-      }
+        if(!child?.isTransformControlsRoot){
+          let layer = layerContainer.querySelector(`[data-uuid="${child.uuid}"]`)
+          if(layer)layer.remove()
+          child.removeFromParent()
+        }
+      })
+  }
+
+  window.addEventListener(('mousemove'),(e)=>{
+    let x = (e.clientX / (window.innerWidth / 2) - 1 )
+    let y = -(e.clientY / (window.innerHeight / 2) - 1 )
+    rayCast.setFromCamera(new THREE.Vector2(x,y),mainCamera)
+    let newScene = mainScene.clone()
+    newScene.children = mainScene.children.filter((chlid)=>chlid.type === "Mesh") ?? []
+    let intersectObjects = rayCast.intersectObject(newScene)
+    console.log(intersectObjects);
+    
+    intersectObjects.forEach((point)=>{
+      let cords = checkIfValidPoint(point.object,point.point);
+      
+      if(!checkIfPointExist(mainScene,point.point) && cords){
+        let buffer = new THREE.BufferGeometry()
+        let vertices = new Float32Array([
+          cords[0],cords[1],cords[2]
+        ])
+        buffer.setAttribute('position', new THREE.BufferAttribute(vertices, 3))
+        let points = new THREE.Points( buffer,new THREE.PointsMaterial({color: 'red',
+    size: 0.2}))
+        points.userData.skip = true
+        point.object.add(points)
+        }
+
     })
+    
+  })
+}
+function checkIfPointExist(mainScene,point) {
+  mainScene.children.forEach((child)=>{
+    if(child.type == 'Points' && point.x == child.position.x && point.y == child.position.y && point.z == child.position.z){
+      return true
+    }
+    return false
+  })
 }
 
+function checkIfValidPoint(object,point) {
+  let positions = object.geometry.attributes.position.array
+  let found = false;
+  let cords = []
+  
+  for (let i = 0; i < positions.length; i+= 3) {
+
+    
+    if((Math.abs(point.x - positions[i]) < .2)
+      && (Math.abs(point.y - positions[i + 1]) < .2)
+    && (Math.abs(point.z - positions[i + 2]) < .2))
+    {
+      cords = [positions[i],positions[i + 1],positions[i + 2]]
+      found = true
+      break
+    }
+  }
+  if(found)return cords
+  return false
+      
 }
-
-
