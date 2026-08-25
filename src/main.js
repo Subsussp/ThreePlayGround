@@ -3962,8 +3962,11 @@ console.log(child.geometry);
       })
   }
   let mouseIsDown = false
+  let firstMouseDown = true
+  let referencePoint;
   let index;
   let instantIndex;
+  let instantCords;
   const dragPlane = new THREE.Plane();
 
   const cameraDirection = new THREE.Vector3();
@@ -3973,29 +3976,31 @@ console.log(child.geometry);
     let x = (e.clientX / (window.innerWidth / 2) - 1 )
     let y = -(e.clientY / (window.innerHeight / 2) - 1 )
     rayCast.setFromCamera(new THREE.Vector2(x,y),mainCamera)
-    mainScene.children.forEach((chlid)=>{
-      if(chlid.type === "Mesh"){
-        
-        let intersectObjects = rayCast.intersectObject(chlid,false)
-        
-        intersectObjects.forEach((intersect)=>{
+  
+    mainScene.children.forEach((child)=>{
+      if(child.type === "Mesh"){
+        let point;
+        let intersectObjects = rayCast.intersectObject(child,false)
+        if(mouseIsDown){
+            point = new THREE.Vector3();
+            dragPlane.setFromNormalAndCoplanarPoint(
+            cameraDirection,
+            new THREE.Vector3(0,0,0)
+          );
+            rayCast.ray.intersectPlane(dragPlane, point);
+        }
+        if(intersectObjects.length > 0){
+          intersectObjects.forEach((intersect)=>{
           let cords = checkIfValidPoint(intersect.object,intersect.point);
           instantIndex = cords[3]
+          instantCords = cords
           let positions = intersect.object.geometry.attributes.position
-          console.log(mouseIsDown);
-          
+ 
           if(mouseIsDown){
             index == undefined && (index = instantIndex)
             console.log(index);
             controls.enabled = false
-            const point = new THREE.Vector3();
-            dragPlane.setFromNormalAndCoplanarPoint(
-              cameraDirection,
-              new THREE.Vector3(cords[0],cords[1],cords[2])
-            );
-            rayCast.ray.intersectPlane(dragPlane, point);
-            console.log(point);
-            
+
             intersect.object.children.forEach((childpoint)=>{
               let pointCords = childpoint.geometry.attributes.position.array
               if(pointCords[0] == cords[0] && pointCords[1] == cords[1] && pointCords[2] == cords[2]){
@@ -4003,10 +4008,10 @@ console.log(child.geometry);
                   childpoint.geometry.attributes.position.needsUpdate = true
                 }
               })
-          for (let i = 0; i < index; i++) {
-              intersect.object.geometry.attributes.position.setXYZ(index[i],point.x ,point.y,point.z)
-              intersect.object.geometry.attributes.position.needsUpdate = true
-          }
+            for (let i = 0; i < index.length; i++) {              
+                intersect.object.geometry.attributes.position.setXYZ(index[i],point.x ,point.y,point.z)
+                intersect.object.geometry.attributes.position.needsUpdate = true
+            }
 
           }
           if(!checkIfPointExist(mainScene,cords) && cords && !mouseIsDown){
@@ -4022,16 +4027,52 @@ console.log(child.geometry);
         size: 0.2}))
             points.userData.customPoint = true
             points.userData.skip = true
-            intersect.object.add(points)
+            // intersect.object.add(points)
             }
     
         })
-      }
-    })
-    
+        }
+        else if(point){
+          let cords = checkIfValidPoint(child,point);
+          if(cords){
+          instantIndex = cords[3]
+          instantCords = cords
+          let positions = child.geometry.attributes.position
+          
+            index == undefined && (index = instantIndex)
+            controls.enabled = false
+
+            child.children.forEach((childpoint)=>{
+              let pointCords = childpoint.geometry.attributes.position.array
+              if(pointCords[0] == cords[0] && pointCords[1] == cords[1] && pointCords[2] == cords[2]){
+                  childpoint.geometry.attributes.position.setXYZ(0,point.x ,point.y,point.z)
+                  childpoint.geometry.attributes.position.needsUpdate = true
+                }
+              })
+            for (let i = 0; i < index.length; i++) {              
+                child.geometry.attributes.position.setXYZ(index[i],point.x ,point.y,point.z)
+                child.geometry.attributes.position.needsUpdate = true
+            }
+          }else{
+            if(firstMouseDown){
+              mouseIsDown = false
+            }
+          }
+
+        }else{
+          if(firstMouseDown){
+            mouseIsDown = false
+          }
+        }
+  
+  }}
+  
+  )
+    firstMouseDown = false
   })
   window.addEventListener('mousedown',(event)=>{
     mouseIsDown= true
+    referencePoint = new THREE.Vector3(instantCords[0],instantCords[1],instantCords[2])
     index = instantIndex
   })
   window.addEventListener('mouseup',(event)=>{
