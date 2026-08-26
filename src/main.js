@@ -3937,47 +3937,23 @@ console.log(child.geometry);
       saveSceneState()
     }
 
-}
-  function disposeEverything() {
-    mainComposer = null
-    effectsNames = null
-    chosenLayer = null
-    document.getElementById('panelContainer') && document.getElementById('panelContainer').remove()
-    hideTransformAndSelectionBox()  
-      if(TC)TC.detach();
-      ([...mainScene.children]).forEach((child)=>{
-        if(child?.isGroup){
-          [...child.children].forEach((groupChild)=>{
-            let layer = layerContainer.querySelector(`[data-uuid="${groupChild.uuid}"]`)
-            if(layer)layer.remove()
-            groupChild.removeFromParent()        
-          }
-          )
-        }
-        if(!child?.isTransformControlsRoot){
-          let layer = layerContainer.querySelector(`[data-uuid="${child.uuid}"]`)
-          if(layer)layer.remove()
-          child.removeFromParent()
-        }
-      })
-  }
-  let mouseIsDown = false
-  let firstMouseDown = true
-  let referencePoint;
-  let index;
-  let instantIndex;
-  let instantCords;
-  const dragPlane = new THREE.Plane();
+      let mouseIsDown = false
+    let firstMouseDown = true
+    let referencePoint;
+    let index;
+    let instantIndex;
+    let instantCords;
+    const dragPlane = new THREE.Plane();
 
-  const cameraDirection = new THREE.Vector3();
-  mainCamera.getWorldDirection(cameraDirection);
+    const cameraDirection = new THREE.Vector3();
+    mainCamera.getWorldDirection(cameraDirection);
 
-  window.addEventListener(('mousemove'),(e)=>{
-    if(!insideCanvas(e.clientX))return
-    let x = (e.clientX / (window.innerWidth / 2) - 1 )
-    let y = -(e.clientY / (window.innerHeight / 2) - 1 )
-    rayCast.setFromCamera(new THREE.Vector2(x,y),mainCamera)
-  
+    window.addEventListener(('mousemove'),(e)=>{
+      if(!insideCanvas(e.clientX))return
+      let x = (e.clientX / (window.innerWidth / 2) - 1 )
+      let y = -(e.clientY / (window.innerHeight / 2) - 1 )
+      rayCast.setFromCamera(new THREE.Vector2(x,y),mainCamera)
+    
     mainScene.children.forEach((child)=>{
       if(child.type === "Mesh"){
         let point;
@@ -3996,19 +3972,20 @@ console.log(child.geometry);
           instantIndex = cords[3]
           instantCords = cords
           let positions = intersect.object.geometry.attributes.position
- 
+          console.log('it intersects');
+          
           if(mouseIsDown){
             index == undefined && (index = instantIndex)
             controls.enabled = false
-            console.log(cords);
-            console.log(referencePoint);
             point = new THREE.Vector3();
-            dragPlane.setFromNormalAndCoplanarPoint(
-            cameraDirection,
-            referencePoint
-          );
+            if(referencePoint){
+                dragPlane.setFromNormalAndCoplanarPoint(
+                cameraDirection,
+                referencePoint
+              );
+              rayCast.ray.intersectPlane(dragPlane, point);
+            }
 
-            rayCast.ray.intersectPlane(dragPlane, point);
             // visual feedback (points) update 
             // intersect.object.children.forEach((childpoint)=>{
             //   let pointCords = childpoint.geometry.attributes.position.array
@@ -4032,6 +4009,7 @@ console.log(child.geometry);
           instantIndex = cords[3]
           instantCords = cords
           let positions = child.geometry.attributes.position
+          console.log('it points');
           
             index == undefined && (index = instantIndex)
             controls.enabled = false
@@ -4064,61 +4042,86 @@ console.log(child.geometry);
   )
     firstMouseDown = false
   })
-  window.addEventListener('mousedown',(event)=>{
-    if(!insideCanvas(event.clientX))return
-    mouseIsDown= true
-    firstMouseDown = true
-    if(instantCords){      
-      referencePoint = new THREE.Vector3(instantCords[0],instantCords[1],instantCords[2])
-    }
-    if(instantIndex){
-      index = instantIndex
-    }
-  })
-  window.addEventListener('mouseup',(event)=>{
-    if(!insideCanvas(event.clientX))return
-    controls.enabled = true
-    firstMouseDown = true
-    mouseIsDown= false})
-}
-function checkIfPointExist(mainScene,cords) {
-  let exist = false
-  mainScene.children.forEach((child)=>{
-    if(child?.children && child.type == 'Mesh'){
-      child.children.forEach((subChild)=>{
-        if(subChild.type == 'Points' && subChild.userData.customPoint == true){
-          let pointCords = subChild.geometry.attributes.position.array
-          if(cords[0] == pointCords[0] && cords[1] == pointCords[1] && cords[2] == pointCords[2]){
-            exist = true
+    window.addEventListener('mousedown',(event)=>{
+      if(!insideCanvas(event.clientX))return
+      mouseIsDown= true
+      firstMouseDown = true
+      if(instantCords){      
+        referencePoint = new THREE.Vector3(instantCords[0],instantCords[1],instantCords[2])
+      }
+      if(instantIndex){
+        index = instantIndex
+      }
+    })
+    window.addEventListener('mouseup',(event)=>{
+      if(!insideCanvas(event.clientX))return
+      controls.enabled = true
+      firstMouseDown = true
+      mouseIsDown= false})
+  }
+  function checkIfPointExist(mainScene,cords) {
+    let exist = false
+    mainScene.children.forEach((child)=>{
+      if(child?.children && child.type == 'Mesh'){
+        child.children.forEach((subChild)=>{
+          if(subChild.type == 'Points' && subChild.userData.customPoint == true){
+            let pointCords = subChild.geometry.attributes.position.array
+            if(cords[0] == pointCords[0] && cords[1] == pointCords[1] && cords[2] == pointCords[2]){
+              exist = true
+            }
           }
+        })
+      }
+      })
+    return exist
+  }
+
+  function checkIfValidPoint(object,point) {
+    let positions = object.geometry.attributes.position.array
+    let found = false;
+    let indexOfAllPoints = []
+    let cords = []
+    
+    for (let i = 0; i < positions.length; i+= 3) {
+      if((Math.abs(point.x - positions[i]) < .3)
+        && (Math.abs(point.y - positions[i + 1]) < .3)
+      && (Math.abs(point.z - positions[i + 2]) < .3))
+      {
+        cords = [positions[i],positions[i + 1],positions[i + 2]]
+        indexOfAllPoints.push((i / 3))
+        found = true
+      }
+    }
+    cords.push(indexOfAllPoints)
+    if(found)return cords
+    return false
+        
+  }
+  function insideCanvas(mouseX){
+    return document.getElementById('optionMenu').getBoundingClientRect().x > mouseX
+  }
+
+  }
+  function disposeEverything() {
+    mainComposer = null
+    effectsNames = null
+    chosenLayer = null
+    document.getElementById('panelContainer') && document.getElementById('panelContainer').remove()
+    hideTransformAndSelectionBox()  
+      if(TC)TC.detach();
+      ([...mainScene.children]).forEach((child)=>{
+        if(child?.isGroup){
+          [...child.children].forEach((groupChild)=>{
+            let layer = layerContainer.querySelector(`[data-uuid="${groupChild.uuid}"]`)
+            if(layer)layer.remove()
+            groupChild.removeFromParent()        
+          }
+          )
+        }
+        if(!child?.isTransformControlsRoot){
+          let layer = layerContainer.querySelector(`[data-uuid="${child.uuid}"]`)
+          if(layer)layer.remove()
+          child.removeFromParent()
         }
       })
-    }
-    })
-  return exist
-}
-
-function checkIfValidPoint(object,point) {
-  let positions = object.geometry.attributes.position.array
-  let found = false;
-  let indexOfAllPoints = []
-  let cords = []
-  
-  for (let i = 0; i < positions.length; i+= 3) {
-    if((Math.abs(point.x - positions[i]) < .3)
-      && (Math.abs(point.y - positions[i + 1]) < .3)
-    && (Math.abs(point.z - positions[i + 2]) < .3))
-    {
-      cords = [positions[i],positions[i + 1],positions[i + 2]]
-      indexOfAllPoints.push((i / 3))
-      found = true
-    }
   }
-  cords.push(indexOfAllPoints)
-  if(found)return cords
-  return false
-      
-}
-function insideCanvas(mouseX){
-  return document.getElementById('optionMenu').getBoundingClientRect().x > mouseX
-}
