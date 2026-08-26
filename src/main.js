@@ -2865,16 +2865,16 @@ const materialDefaultProperties = {
     let computeVertexNormals = createCustomButtonElement('compute Vertex Normals')
     let center = createCustomButtonElement('center')
     let divForToNonIndex = document.createElement('div')
-    let toNonIndex = createCustomButtonElement('to_Non_Indexed')
+    let toNonIndex;
     let showVertexNormals = createCustomButtonElement('show Vertex Normals')
     let Row = createRow('attribute')
     let attributes = createKeyElement('attributes (points)')
     let divForAttributes = document.createElement('div')
     console.log(object);
-    let spanForDisplay = createInfoDisplaySpan('index',object.geometry.index.count)
+    let spanForDisplay = createInfoDisplaySpan('index',object.geometry?.index?.count ?? 'Non Indexed')
     let spanForDisplay1 = createInfoDisplaySpan('position',object.geometry.attributes.position.count)
     let spanForDisplay2 = createInfoDisplaySpan('normal',object.geometry.attributes.normal.count)
-    let spanForDisplay3 = createInfoDisplaySpan('uv',object?.geometry?.attributes?.uv?.count ?? 0)
+    let spanForDisplay3 = createInfoDisplaySpan('uv',object.geometry?.attributes?.uv?.count ?? 0)
     
     divForAttributes.style.display = 'flex'
     divForAttributes.style.flexDirection = 'column'
@@ -2893,16 +2893,7 @@ const materialDefaultProperties = {
     center.addEventListener('click',(e)=>{
       object.geometry.center()
     })
-    toNonIndex.addEventListener('click',(e)=>{
-      object.geometry = object.geometry.toNonIndexed()
-      Row.remove()
-      divForToNonIndex.remove()
-      let spanForDisplayVertex = createInfoDisplaySpan('vertex',object.geometry.attributes.position.count)
-      divForAttributes.innerHTML = ''
-      divForAttributes.append(spanForDisplayVertex)
-      Row.append(attributes,divForAttributes)
-      panel.appendChild(Row)
-    })
+  
     showVertexNormals.addEventListener('click',(e)=>{
       if(firstTime){
         firstTime = false
@@ -2958,8 +2949,22 @@ const materialDefaultProperties = {
         panel.appendChild(row)
       })
     }
+    if(object.geometry?.index){
+      toNonIndex = createCustomButtonElement('to_Non_Indexed')
+      toNonIndex.addEventListener('click',(e)=>{
+        object.geometry = object.geometry.toNonIndexed()
+        Row.remove()
+        divForToNonIndex.remove()
+        let spanForDisplayVertex = createInfoDisplaySpan('vertex',object.geometry.attributes.position.count)
+        divForAttributes.innerHTML = ''
+        divForAttributes.append(spanForDisplayVertex)
+        Row.append(attributes,divForAttributes)
+        panel.appendChild(Row)
+    })
+    }
     divForButtons.append(computeTangents,computeVertexNormals,center)
-    divForToNonIndex.append(toNonIndex,showVertexNormals)
+    if(object.geometry?.index)divForToNonIndex.append(toNonIndex,showVertexNormals)
+    else{divForToNonIndex.append(showVertexNormals)}
     Row.append(attributes,divForAttributes)
     panel.appendChild(divForButtons)
     panel.appendChild(Row)
@@ -3491,12 +3496,24 @@ console.log(child.geometry);
           const lo = new FBXLoader()
           let fbxObj = lo.load(blobUrl,(e)=>{
             console.log(e);
+            e.userData.fileExtention = extention
+            e.userData.isFileImport = true
+            e.userData.fileName = fileNameWithoutExtention.replaceAll('.','_')
+            chosenLayer = e
             mainScene.add(e)
           })
           break; 
         case 'svg':
           break; 
         case 'obj':
+          const objLoader = new OBJLoader();
+          let object = objLoader.load(blobUrl,(e)=>{
+            e.userData.fileExtention = extention
+            e.userData.isFileImport = true
+            e.userData.fileName = fileNameWithoutExtention.replaceAll('.','_')
+            chosenLayer = e
+            mainScene.add(e)
+          })
           break; 
         case 'stl' :
           break; 
