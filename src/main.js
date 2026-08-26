@@ -2044,7 +2044,7 @@ const materialDefaultProperties = {
         function checkintersect(e){
           let x = (e.clientX / (window.innerWidth / 2) - 1 )
           let y = -(e.clientY / (window.innerHeight / 2) - 1 )
-          if(insideCanvas(e.clientX)){
+          if(isInsideCanvas(e.clientX)){
             panelEle.classList.remove('optrans')
             rayCast.setFromCamera(new THREE.Vector2(x,y),mainCamera)
             let filters = [];
@@ -2363,7 +2363,7 @@ const materialDefaultProperties = {
     select.className = 'settingSelect'
     return select
   }
-createSceneSettings()
+  createSceneSettings()
   // Init 
   function mainInit(){
     if(chosenLayer){
@@ -3488,10 +3488,10 @@ console.log(child.geometry);
           })
           break;
         case 'fbx':
-          const lo = loaderMap[extention]
-          const fbxLoader = new lo()        
-          let fbxObj = fbxLoader.load(blobUrl,(e)=>{
-            mainScene.add(e.scene)
+          const lo = new FBXLoader()
+          let fbxObj = lo.load(blobUrl,(e)=>{
+            console.log(e);
+            mainScene.add(e)
           })
           break; 
         case 'svg':
@@ -3949,7 +3949,7 @@ console.log(child.geometry);
     mainCamera.getWorldDirection(cameraDirection);
 
     window.addEventListener(('mousemove'),(e)=>{
-      if(!insideCanvas(e.clientX))return
+      if(!isInsideCanvas(e.clientX))return
       let x = (e.clientX / (window.innerWidth / 2) - 1 )
       let y = -(e.clientY / (window.innerHeight / 2) - 1 )
       rayCast.setFromCamera(new THREE.Vector2(x,y),mainCamera)
@@ -4043,7 +4043,7 @@ console.log(child.geometry);
     firstMouseDown = false
   })
     window.addEventListener('mousedown',(event)=>{
-      if(!insideCanvas(event.clientX))return
+      if(!isInsideCanvas(event.clientX))return
       mouseIsDown= true
       firstMouseDown = true
       if(instantCords){      
@@ -4054,7 +4054,7 @@ console.log(child.geometry);
       }
     })
     window.addEventListener('mouseup',(event)=>{
-      if(!insideCanvas(event.clientX))return
+      if(!isInsideCanvas(event.clientX))return
       controls.enabled = true
       firstMouseDown = true
       mouseIsDown= false})
@@ -4097,10 +4097,8 @@ console.log(child.geometry);
     return false
         
   }
-  function insideCanvas(mouseX){
+  function isInsideCanvas(mouseX){
     return document.getElementById('optionMenu').getBoundingClientRect().x > mouseX
-  }
-
   }
   function disposeEverything() {
     mainComposer = null
@@ -4125,3 +4123,5 @@ console.log(child.geometry);
         }
       })
   }
+  }
+
