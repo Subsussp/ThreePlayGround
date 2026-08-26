@@ -3213,6 +3213,10 @@ const materialDefaultProperties = {
   }
 
   function attachTranformControls(obj){
+    // debug here
+    const pos = new THREE.Vector3();
+    obj.getWorldPosition(pos);
+    console.log(pos);
     TC.attach(obj)
     showTransform()
   }
