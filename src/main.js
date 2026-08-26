@@ -2400,6 +2400,7 @@ const materialDefaultProperties = {
         label.classList.add('vertwr')
         label.innerHTML ='Material'
         label.addEventListener("click",selectLabel)
+        console.log(chosenLayer);
         createMaterialPanel(chosenLayer,panelContainer)
         meshComponentContainer.appendChild(label)
       }
@@ -2975,6 +2976,24 @@ const materialDefaultProperties = {
   function createMaterialPanel(object,panelContainer){
     let panel = document.createElement('div')
     panel.id = 'materialPanel'
+    if(Array.isArray(object.material)){
+      if(object.material.length > 1){
+        let row = createRow('Slot')
+        let keyElement = createKeyElement('Slot')
+        let slotSelect = createSettingSelect()
+        slotSelect.style.textTransform = 'none'
+        slotSelect.value = object.material[0].type
+        object.material.forEach((material)=>{
+        let option = document.createElement('option')
+        option.innerText = material.type
+        option.value = material.type
+        slotSelect.append(option);
+    })
+          row.append(keyElement,slotSelect)
+          panel.append(row)
+      }
+    }
+
     let row = createRow('materialType')
     let keyElement = createKeyElement('type')
     let typeSelect = createSettingSelect()
@@ -3054,8 +3073,8 @@ const materialDefaultProperties = {
 
 
   // Helping functions
-  function appendMaterialParameters(object,container,initialize){
-    Object.entries(materialProperties[object.material.type]).forEach(property => {
+  function appendMaterialParameters(object,container,initialize,array){
+    Object.entries(materialProperties[array ? object.material[0].type : object.material.type]).forEach(property => {
       let propertyName = property[0]
       let objectMaterial = object.material
       let propValue = initialize ? property[1].value : objectMaterial[propertyName]
@@ -3096,10 +3115,10 @@ const materialDefaultProperties = {
 
       }
       if(property[1].type === "boolean"){
-        let boolean = createCheckBoxInput(object.material,property[0])
+        let boolean = createCheckBoxInput(objectMaterial,property[0])
         boolean.addEventListener('input',(e)=>{
-          object.material[propertyName] = e.target.checked
-          object.material.needsUpdate = true;              
+          objectMaterial[propertyName] = e.target.checked
+          objectMaterial.needsUpdate = true;              
 
         })
         
@@ -3117,7 +3136,7 @@ const materialDefaultProperties = {
         })
 
         select.addEventListener('change',(e)=>{
-          object.material[propertyName] = property[1].options[e.target.value]
+          objectMaterial[propertyName] = property[1].options[e.target.value]
         })
 
         select.value = Object.keys(property[1].options).find(key => property[1].options[key] === propValue);
@@ -3135,8 +3154,8 @@ const materialDefaultProperties = {
           functionAfterPhotoUpload = (url)=>{
             const loader = new THREE.TextureLoader();
             loader.load(url, (texture) => {
-              object.material[propertyName] = texture;
-              object.material.needsUpdate = true;              
+             objectMaterial[propertyName] = texture;
+             objectMaterial.needsUpdate = true;              
               URL.revokeObjectURL(url);
             });
           }
@@ -3430,7 +3449,6 @@ console.log(child.geometry);
             appendLayer(e ,layerContainer,'type ',false)
 
             e.children.forEach((f)=>{              
-              handleTranformControlsAndBoxHelper(f)
               layerFiltering(f)
             })
             return null;
@@ -3512,6 +3530,8 @@ console.log(child.geometry);
             e.userData.isFileImport = true
             e.userData.fileName = fileNameWithoutExtention.replaceAll('.','_')
             chosenLayer = e
+            console.log(e);
+            
             mainScene.add(e)
           })
           break; 
@@ -3850,7 +3870,6 @@ console.log(child.geometry);
     
     function updateLayers(e){
       handleTranformControlsAndBoxHelper(chosenLayer)
-      
       layerFiltering(e.child)
       saveSceneState()
 
