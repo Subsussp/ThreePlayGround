@@ -1007,6 +1007,7 @@ async function createEditor(mainscene,initialization,rawObject){
   uniforms: { type: "object", value: {} }
 },
   };
+  const arrayOfMaterialNames = Object.keys(materialProperties)
 const materialDefaultProperties = {
     MeshBasicMaterial: {
         color: 0xffffff,
@@ -2392,7 +2393,6 @@ const materialDefaultProperties = {
         label.addEventListener("click",selectLabel)
         createGeometryPanel(chosenLayer,panelContainer)
         meshComponentContainer.appendChild(label)
-        // console.log(chosenLayer);
         
       }
       if(chosenLayer?.material) {
@@ -2400,6 +2400,7 @@ const materialDefaultProperties = {
         label.classList.add('vertwr')
         label.innerHTML ='Material'
         label.addEventListener("click",selectLabel)
+        console.log(chosenLayer);
         createMaterialPanel(chosenLayer,panelContainer)
         meshComponentContainer.appendChild(label)
       }
@@ -2974,22 +2975,30 @@ const materialDefaultProperties = {
   function createMaterialPanel(object,panelContainer){
     let panel = document.createElement('div')
     panel.id = 'materialPanel'
+    let material;
     if(Array.isArray(object.material)){
-      if(object.material.length > 1){
+      if(object.material.length > 1){        
         let row = createRow('Slot')
         let keyElement = createKeyElement('Slot')
         let slotSelect = createSettingSelect()
         slotSelect.style.textTransform = 'none'
-        slotSelect.value = object.material[0].type
-        object.material.forEach((material)=>{
+        slotSelect.value = 1 + '. Material'
+        material = object.material[0]
+        object.material.forEach((material,i)=>{
         let option = document.createElement('option')
-        option.innerText = material.type
-        option.value = material.type
+        option.innerText = (i + 1) + '. Material'
+        option.value = (i)
         slotSelect.append(option);
     })
+        slotSelect.addEventListener('change',(event)=>{
+          material = object.material[+slotSelect.value]
+          typeSelect.value = arrayOfMaterialNames.indexOf(material.type)
+        })
           row.append(keyElement,slotSelect)
           panel.append(row)
       }
+    }else{
+        material = object.material
     }
 
     let row = createRow('materialType')
@@ -2997,15 +3006,16 @@ const materialDefaultProperties = {
     let typeSelect = createSettingSelect()
 
     typeSelect.style.textTransform = 'none'
-    Object.keys(materialProperties).forEach((material)=>{
+    arrayOfMaterialNames.forEach((materialName,i)=>{
       let option = document.createElement('option')
-      option.innerText = material
-      option.value = material
-      const materialType = materials[material];
+      option.innerText = materialName
+      const materialType = materials[materialName];
+      option.value = i
 
       const objectType = {
         Sprite: "Sprite",
         Line: "Line",
+        LineSegments: "Line",
         Points: "Points"
       }[object.type];
 
@@ -3015,17 +3025,23 @@ const materialDefaultProperties = {
       else if (materialType?.[objectType]) {
         typeSelect.append(option);
       }
+      console.log( object.type);
+      console.log( material.type);
+      
+      if(materialName == material.type){
+        typeSelect.value = i
+     }
     })
-    typeSelect.addEventListener('change',(event)=>{
-      object.material = new THREE[typeSelect.value]
+    typeSelect.addEventListener('change',(event)=>{      
+      material = new THREE[arrayOfMaterialNames[typeSelect.value]]
       document.querySelectorAll('.removeable').forEach((child)=>child.remove())
-      appendMaterialParameters(object,panel,true)
+      appendMaterialParameters(material,panel,true)
     })
-    typeSelect.value = object.material.type
+
     
     row.append(keyElement,typeSelect)
     panel.append(row)
-    appendMaterialParameters(object,panel,false)
+    appendMaterialParameters(material,panel,false)
     panelContainer.appendChild(panel)
   }
 
@@ -3071,10 +3087,10 @@ const materialDefaultProperties = {
 
 
   // Helping functions
-  function appendMaterialParameters(object,container,initialize,array){
-    Object.entries(materialProperties[array ? object.material[0].type : object.material.type]).forEach(property => {
+  function appendMaterialParameters(material,container,initialize){
+    Object.entries(materialProperties[material.type]).forEach(property => {
       let propertyName = property[0]
-      let objectMaterial = object.material
+      let objectMaterial = material
       let propValue = initialize ? property[1].value : objectMaterial[propertyName]
       let row = createRow(propertyName)
       row.classList.add('removeable')
@@ -3210,10 +3226,7 @@ const materialDefaultProperties = {
       }
   }
 
-  function attachTranformControls(obj){
-    // debug here
-    console.log(obj);
-    
+  function attachTranformControls(obj){    
     TC.attach(obj)
     showTransform()
   }
