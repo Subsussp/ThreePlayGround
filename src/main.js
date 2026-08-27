@@ -2142,7 +2142,7 @@ const materialDefaultProperties = {
               intersectedObject.material = material
               chosenLayer = intersectedObject
               handleTranformControlsAndBoxHelper(chosenLayer)
-              settings.openPanelOnChange && mainInit() 
+              mainInit() 
             }
             return
           }  
@@ -2366,14 +2366,13 @@ const materialDefaultProperties = {
   }
   createSceneSettings()
   // Init 
+
   function mainInit(){
     if(chosenLayer){
-      // start adding and style the object stuff     
-      if(!mainOption.classList.contains('opop')){
+      if(!mainOption.classList.contains('opop') &&  settings.openPanelOnChange){
         mainOption.click()
       }    
-      let htmlLayer = layerContainer.querySelector(`[data-uuid="${chosenLayer.uuid}"]`)
-      htmlLayer && handleActivation(htmlLayer)
+      SelectLayerVisual()
       let meshComponentContainer = document.createElement('div')
       meshComponentContainer.id = 'meshComponentContainer'    
 
@@ -3226,7 +3225,10 @@ const materialDefaultProperties = {
     const putRequest = store.put(pasr,0);
     window.scene = mainScene
   }
-
+  function SelectLayerVisual(){
+    let htmlLayer = layerContainer.querySelector(`[data-uuid="${chosenLayer.uuid}"]`)
+    htmlLayer && handleActivation(htmlLayer)
+  }
   function handleTranformControlsAndBoxHelper(obj){
       hideTransformAndSelectionBox()  
       if(obj?.isLight){
@@ -3824,7 +3826,7 @@ sceneAddSection += `scene.add(${fileNameWithoutExtention}.scene)\n`
           }
           hideTransformAndSelectionBox()
           handleTranformControlsAndBoxHelper(chosenLayer)
-          settings.openPanelOnChange && mainInit()
+          mainInit()
 
           saveSceneState()
           updateInfo()
