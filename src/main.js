@@ -4020,6 +4020,7 @@ sceneAddSection += `scene.add(${fileNameWithoutExtention}.scene)\n`
 
     window.addEventListener(('mousemove'),(e)=>{            
       if(!isInsideCanvas(e.clientX) || isUsingTransformControls)return
+      
       let x = (e.clientX / (window.innerWidth / 2) - 1 )
       let y = -(e.clientY / (window.innerHeight / 2) - 1 )
       rayCast.setFromCamera(new THREE.Vector2(x,y),mainCamera)
@@ -4037,6 +4038,7 @@ sceneAddSection += `scene.add(${fileNameWithoutExtention}.scene)\n`
               );
               rayCast.ray.intersectPlane(dragPlane, point);
             }
+            
         }
         if(intersectObjects.length > 0){
           intersectObjects.forEach((intersect)=>{
@@ -4078,13 +4080,12 @@ sceneAddSection += `scene.add(${fileNameWithoutExtention}.scene)\n`
         else if(point){
           let cords = checkIfValidPoint(child,point);
           if(cords){
+            console.log('found a close point by');
           instantIndex = cords[3]
           instantCords = cords
-          let positions = child.geometry.attributes.position
-          console.log('it points');
-          
-            index == undefined && (index = instantIndex)
-            controls.enabled = false
+          let positions = child.geometry.attributes.position          
+          index == undefined && (index = cords[3])
+          controls.enabled = false
             // visual feedback (points) update 
             // child.children.forEach((childpoint)=>{
             //   let pointCords = childpoint.geometry.attributes.position.array
