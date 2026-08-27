@@ -2146,7 +2146,7 @@ const materialDefaultProperties = {
               intersectedObject.material = material
               chosenLayer = intersectedObject
               handleTranformControlsAndBoxHelper(chosenLayer)
-              mainInit() 
+              settings.openPanelOnChange && mainInit() 
             }
             return
           }  
@@ -2165,7 +2165,7 @@ const materialDefaultProperties = {
             return
           }
             mainScene.add(obj)
-            mainInit()
+            settings.openPanelOnChange && mainInit()
           }
           
         },{once:true})
@@ -2371,11 +2371,18 @@ const materialDefaultProperties = {
   createSceneSettings()
   // Init 
 
-  function mainInit(){
+  function mainInit(v){
     if(chosenLayer){
-      if(!mainOption.classList.contains('opop') &&  settings.openPanelOnChange){
+      if(!mainOption.classList.contains('opop') && settings.openPanelOnChange)  
+  {
         mainOption.click()
       }    
+      if(v== 'main' && !mainOption.classList.contains('opop')){
+        document.body.querySelectorAll('.opop').forEach((c)=>{c.classList.remove('opop')})
+        toggleFirstAnimation(mainOption.firstElementChild)
+        objectContainer.classList.remove('grid-layout')
+        mainOption.classList.add('opop')
+      }
       SelectLayerVisual()
       let meshComponentContainer = document.createElement('div')
       meshComponentContainer.id = 'meshComponentContainer'    
@@ -2465,7 +2472,6 @@ const materialDefaultProperties = {
 }
       panelContainer.appendChild(effectStack)
       }
-
       objectContainer.innerHTML = ""
       objectContainer.appendChild(meshComponentContainer)
       objectContainer.appendChild(panelContainer)
@@ -3508,7 +3514,7 @@ sceneAddSection += `scene.add(${fileNameWithoutExtention}.scene)\n`
         chosenLayer = mainScene.getObjectByProperty("uuid",object.uuid)
         handleTranformControlsAndBoxHelper(chosenLayer)
       }
-      mainInit()
+      mainInit('main')
     })
     parent.appendChild(layer)
   }
@@ -3541,7 +3547,6 @@ sceneAddSection += `scene.add(${fileNameWithoutExtention}.scene)\n`
           break;
         case 'fbx':
           fbxLoader.load(blobUrl,(e)=>{
-            // console.log(e);
             e.userData.fileExtention = extention
             e.userData.isFileImport = true
             e.userData.fileName = fileNameWithoutExtention.replaceAll('.','_')
@@ -3565,7 +3570,6 @@ sceneAddSection += `scene.add(${fileNameWithoutExtention}.scene)\n`
             e.userData.fileExtention = extention
             e.userData.isFileImport = true
             e.userData.fileName = fileNameWithoutExtention.replaceAll('.','_')
-            chosenLayer = e
             if ( e.hasColors ) {
               material = new THREE.MeshPhongMaterial( { opacity: e.alpha, vertexColors: true } );
               let mesh = new THREE.Mesh( e, material );
@@ -4188,7 +4192,7 @@ sceneAddSection += `scene.add(${fileNameWithoutExtention}.scene)\n`
   }
   function disposeEverything() {
     mainComposer = null
-    effectsNames = null
+    effectsNames = []
     chosenLayer = null
     document.getElementById('panelContainer') && document.getElementById('panelContainer').remove()
     hideTransformAndSelectionBox()  
