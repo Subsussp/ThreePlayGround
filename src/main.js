@@ -2400,7 +2400,6 @@ const materialDefaultProperties = {
         label.classList.add('vertwr')
         label.innerHTML ='Material'
         label.addEventListener("click",selectLabel)
-        console.log(chosenLayer);
         createMaterialPanel(chosenLayer,panelContainer)
         meshComponentContainer.appendChild(label)
       }
@@ -2871,7 +2870,6 @@ const materialDefaultProperties = {
     let Row = createRow('attribute')
     let attributes = createKeyElement('attributes (points)')
     let divForAttributes = document.createElement('div')
-    console.log(object);
     let spanForDisplay = createInfoDisplaySpan('index',object.geometry?.index?.count ?? 'Non Indexed')
     let spanForDisplay1 = createInfoDisplaySpan('position',object.geometry.attributes.position.count)
     let spanForDisplay2 = createInfoDisplaySpan('normal',object.geometry.attributes.normal.count)
@@ -3214,9 +3212,8 @@ const materialDefaultProperties = {
 
   function attachTranformControls(obj){
     // debug here
-    const pos = new THREE.Vector3();
-    obj.getWorldPosition(pos);
-    console.log(pos);
+    console.log(obj);
+    
     TC.attach(obj)
     showTransform()
   }
@@ -3380,7 +3377,7 @@ sceneAddSection += `scene.add(${fileNameWithoutExtention}.scene)\n`
     
     if(child?.geometry){
       geoVarName = generateName((child.geometry?.userData?.name ? child.geometry.userData.name : child.geometry.name ? child.geometry.name : child.geometry.type).replaceAll('.','_'))
-console.log(child.geometry);
+// console.log(child.geometry);
 
       if(child.geometry.type == 'BufferGeometry'){
         codeSection += `let ${geoVarName} = new THREE.${child.geometry.constructor.name}()\n`
@@ -3517,7 +3514,7 @@ console.log(child.geometry);
         case 'fbx':
           const lo = new FBXLoader()
           let fbxObj = lo.load(blobUrl,(e)=>{
-            console.log(e);
+            // console.log(e);
             e.userData.fileExtention = extention
             e.userData.isFileImport = true
             e.userData.fileName = fileNameWithoutExtention.replaceAll('.','_')
@@ -3534,7 +3531,7 @@ console.log(child.geometry);
             e.userData.isFileImport = true
             e.userData.fileName = fileNameWithoutExtention.replaceAll('.','_')
             chosenLayer = e
-            console.log(e);
+            // console.log(e);
             
             mainScene.add(e)
           })
