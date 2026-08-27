@@ -109,6 +109,9 @@ async function createEditor(mainscene,initialization,rawObject){
   layerContainer.innerHTML = ''
   let upload = document.getElementById('upload')
   const Photo = document.getElementById('photoInput'); 
+  const fbxLoader = new FBXLoader();
+  const stloader = new STLLoader();
+  const objLoader = new OBJLoader();
   const loader = new GLTFLoader();
   const dracoLoader = new DRACOLoader();
   dracoLoader.setDecoderPath('https://www.gstatic.com/draco/v1/decoders/'); 
@@ -3527,7 +3530,7 @@ sceneAddSection += `scene.add(${fileNameWithoutExtention}.scene)\n`
       switch (extention) {
         case 'glb' :
         case 'gltf' :
-          let glbObj = loader.load(blobUrl,(e)=>{
+          loader.load(blobUrl,(e)=>{
             // e.scene.skip = true
             e.scene.userData.fileExtention = extention
             e.scene.userData.isFileImport = true
@@ -3537,8 +3540,7 @@ sceneAddSection += `scene.add(${fileNameWithoutExtention}.scene)\n`
           })
           break;
         case 'fbx':
-          const lo = new FBXLoader()
-          let fbxObj = lo.load(blobUrl,(e)=>{
+          fbxLoader.load(blobUrl,(e)=>{
             // console.log(e);
             e.userData.fileExtention = extention
             e.userData.isFileImport = true
@@ -3550,18 +3552,29 @@ sceneAddSection += `scene.add(${fileNameWithoutExtention}.scene)\n`
         case 'svg':
           break; 
         case 'obj':
-          const objLoader = new OBJLoader();
-          let object = objLoader.load(blobUrl,(e)=>{
+          objLoader.load(blobUrl,(e)=>{
             e.userData.fileExtention = extention
             e.userData.isFileImport = true
             e.userData.fileName = fileNameWithoutExtention.replaceAll('.','_')
-            chosenLayer = e
-            // console.log(e);
-            
+            chosenLayer = e            
             mainScene.add(e)
           })
           break; 
         case 'stl' :
+          stloader.load( blobUrl,(e)=>{
+            e.userData.fileExtention = extention
+            e.userData.isFileImport = true
+            e.userData.fileName = fileNameWithoutExtention.replaceAll('.','_')
+            chosenLayer = e
+            if ( e.hasColors ) {
+              material = new THREE.MeshPhongMaterial( { opacity: e.alpha, vertexColors: true } );
+              let mesh = new THREE.Mesh( e, material );
+              mainScene.add(mesh);
+            }else{
+              mainScene.add(new THREE.Mesh( e ) );
+            }
+          } )
+
           break; 
         case 'ply':
           break; 
