@@ -2976,23 +2976,31 @@ const materialDefaultProperties = {
     let panel = document.createElement('div')
     panel.id = 'materialPanel'
     let material;
+    let indexOfMaterial;
     if(Array.isArray(object.material)){
       if(object.material.length > 1){        
         let row = createRow('Slot')
         let keyElement = createKeyElement('Slot')
         let slotSelect = createSettingSelect()
         slotSelect.style.textTransform = 'none'
-        slotSelect.value = 1 + '. Material'
+        slotSelect.innerText = 1 + '. Material'
+        slotSelect.value = 0
+        indexOfMaterial = 0;
         material = object.material[0]
         object.material.forEach((material,i)=>{
         let option = document.createElement('option')
         option.innerText = (i + 1) + '. Material'
         option.value = (i)
+
         slotSelect.append(option);
     })
         slotSelect.addEventListener('change',(event)=>{
           material = object.material[+slotSelect.value]
+          indexOfMaterial = slotSelect.value;
           typeSelect.value = arrayOfMaterialNames.indexOf(material.type)
+          document.querySelectorAll('.removeable').forEach((child)=>child.remove())
+          appendMaterialParameters(object.material[indexOfMaterial],panel,true)
+
         })
           row.append(keyElement,slotSelect)
           panel.append(row)
@@ -3032,10 +3040,11 @@ const materialDefaultProperties = {
         typeSelect.value = i
      }
     })
-    typeSelect.addEventListener('change',(event)=>{      
-      material = new THREE[arrayOfMaterialNames[typeSelect.value]]
+    typeSelect.addEventListener('change',(event)=>{    
+      if(indexOfMaterial)object.material[indexOfMaterial] = new THREE[arrayOfMaterialNames[typeSelect.value]]
+      else{object.material = new THREE[arrayOfMaterialNames[typeSelect.value]]}
       document.querySelectorAll('.removeable').forEach((child)=>child.remove())
-      appendMaterialParameters(material,panel,true)
+      appendMaterialParameters(indexOfMaterial ? object.material[indexOfMaterial] : object.material,panel,true)
     })
 
     
@@ -3125,6 +3134,8 @@ const materialDefaultProperties = {
             window.removeEventListener('mousemove',valueHandler)
         })
         })
+        number.value = +objectMaterial[propertyName]
+
          row.appendChild(number)
 
       }
