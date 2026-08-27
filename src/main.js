@@ -58,6 +58,7 @@ let initialMouseXPosition;
 let initialMouseYPosition;
 let layerObjects = [];
 let isDraggingTransformControls = true;
+let isUsingTransformControls = false;
 
 let settingFromLocalstorage = window.localStorage.getItem('setting')
 
@@ -3032,8 +3033,6 @@ const materialDefaultProperties = {
       else if (materialType?.[objectType]) {
         typeSelect.append(option);
       }
-      console.log( object.type);
-      console.log( material.type);
       
       if(materialName == material.type){
         typeSelect.value = i
@@ -3344,8 +3343,8 @@ const materialDefaultProperties = {
         }
 
         // console.log(child);
-        console.log(child.material);
-      
+
+        
         if(child?.isMesh){
           handleMeshExport(child,group)
       }
@@ -3680,11 +3679,18 @@ sceneAddSection += `scene.add(${fileNameWithoutExtention}.scene)\n`
     mainScene.add(helper);
     MainRealscene.add(selectionBox);
     TC.addEventListener("dragging-changed", (event) => {
-      controls.enabled = !event.value;
+      controls.enabled = !event.value;      
+      isDraggingTransformControls = event.value;
     })
+    TC.addEventListener('mouseDown', () => {
+    isUsingTransformControls = true;
+    });
+
+    TC.addEventListener('mouseUp', () => {
+        isUsingTransformControls = false;
+    });
     let positionMapArr = ['x','y','z']
     TC.addEventListener('change',(e)=>{
-      isDraggingTransformControls = false 
       if(chosenLayer?.userData?.vertexNormalsHelper){
         let ob = mainScene.getObjectByProperty('uuid', chosenLayer.userData.vertexNormalsHelper);
         if(ob?.update)ob.update()
@@ -3806,6 +3812,7 @@ sceneAddSection += `scene.add(${fileNameWithoutExtention}.scene)\n`
 
     // Event Listeners
     window.addEventListener("mouseup",(e)=>{
+      
       if(isDraggingTransformControls && document.getElementById('optionMenu').getBoundingClientRect().x > e.clientX){
         let x = (e.clientX / (window.innerWidth / 2) - 1 )
         let y = -(e.clientY / (window.innerHeight / 2) - 1 )
@@ -4011,8 +4018,8 @@ sceneAddSection += `scene.add(${fileNameWithoutExtention}.scene)\n`
     const cameraDirection = new THREE.Vector3();
     mainCamera.getWorldDirection(cameraDirection);
 
-    window.addEventListener(('mousemove'),(e)=>{
-      if(!isInsideCanvas(e.clientX))return
+    window.addEventListener(('mousemove'),(e)=>{            
+      if(!isInsideCanvas(e.clientX) || isUsingTransformControls)return
       let x = (e.clientX / (window.innerWidth / 2) - 1 )
       let y = -(e.clientY / (window.innerHeight / 2) - 1 )
       rayCast.setFromCamera(new THREE.Vector2(x,y),mainCamera)
@@ -4023,11 +4030,13 @@ sceneAddSection += `scene.add(${fileNameWithoutExtention}.scene)\n`
         let intersectObjects = rayCast.intersectObject(child,false)
         if(mouseIsDown){
             point = new THREE.Vector3();
-            dragPlane.setFromNormalAndCoplanarPoint(
-            cameraDirection,
-            referencePoint
-          );
-            rayCast.ray.intersectPlane(dragPlane, point);
+            if(referencePoint){
+              dragPlane.setFromNormalAndCoplanarPoint(
+                cameraDirection,
+                referencePoint
+              );
+              rayCast.ray.intersectPlane(dragPlane, point);
+            }
         }
         if(intersectObjects.length > 0){
           intersectObjects.forEach((intersect)=>{
@@ -4060,7 +4069,7 @@ sceneAddSection += `scene.add(${fileNameWithoutExtention}.scene)\n`
             for (let i = 0; i < index.length; i++) {              
                 intersect.object.geometry.attributes.position.setXYZ(index[i],point.x ,point.y,point.z)
                 intersect.object.geometry.attributes.position.needsUpdate = true;
-                          }
+            }
 
           }
     
