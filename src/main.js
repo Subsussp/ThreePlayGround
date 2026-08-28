@@ -13,6 +13,12 @@ import { PLYLoader } from 'three/addons/loaders/PLYLoader.js';
 import { STLLoader } from 'three/addons/loaders/STLLoader.js';
 import { SVGLoader } from 'three/addons/loaders/SVGLoader.js';
 import { OBJLoader } from 'three/addons/loaders/OBJLoader.js';
+import { DRACOExporter, DRACOExporter } from 'three/addons/exporters/DRACOExporter.js';
+import { GLTFExporter } from 'three/addons/exporters/GLTFExporter.js';
+import { STLExporter } from 'three/addons/exporters/STLExporter.js';
+import { PLYExporter } from 'three/addons/exporters/PLYExporter.js';
+import { OBJExporter } from 'three/addons/exporters/OBJExporter.js';
+
 import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
@@ -45,6 +51,7 @@ import { ColorCorrectionShader } from 'three/addons/shaders/ColorCorrectionShade
 import { GammaCorrectionShader } from 'three/addons/shaders/GammaCorrectionShader.js';
 import { VertexNormalsHelper } from 'three/addons/helpers/VertexNormalsHelper.js';
 import Sortable from "sortablejs";
+
 // custom cursor when Dragging
 
 MouseFollower.registerGSAP(gsap);
@@ -60,9 +67,27 @@ let layerObjects = [];
 let isDraggingTransformControls = true;
 let isUsingTransformControls = false;
 
+let db;
 let settingFromLocalstorage = window.localStorage.getItem('setting')
-
 let SCENE_DEFAULT_BACKGROUND_COLOR = new THREE.Color('#333333')
+
+
+const exporters = {
+    drc: new DRACOExporter(),
+    gltf: new GLTFExporter(),
+    obj: new OBJExporter(),
+    stl: new STLExporter(),
+    ply: new PLYExporter(),
+
+};
+const fbxLoader = new FBXLoader();
+const stloader = new STLLoader();
+const objLoader = new OBJLoader();
+const plyLoader = new PLYLoader();
+const loader = new GLTFLoader();
+const dracoLoader = new DRACOLoader();
+dracoLoader.setDecoderPath('https://www.gstatic.com/draco/v1/decoders/'); 
+loader.setDRACOLoader(dracoLoader);
 
 const request = indexedDB.open("threejs-editor", 1);
 
@@ -76,7 +101,6 @@ request.onupgradeneeded = (event) => {
 
 };
 
-let db;
 
 request.onsuccess = (event) => {
     db = event.target.result;
@@ -109,14 +133,6 @@ async function createEditor(mainscene,initialization,rawObject){
   layerContainer.innerHTML = ''
   let upload = document.getElementById('upload')
   const Photo = document.getElementById('photoInput'); 
-  const fbxLoader = new FBXLoader();
-  const stloader = new STLLoader();
-  const objLoader = new OBJLoader();
-  const plyLoader = new PLYLoader();
-  const loader = new GLTFLoader();
-  const dracoLoader = new DRACOLoader();
-  dracoLoader.setDecoderPath('https://www.gstatic.com/draco/v1/decoders/'); 
-  loader.setDRACOLoader(dracoLoader);
   const glb = await loader.loadAsync('https://cdn.jsdelivr.net/gh/Subsussp/THE@gh-pages/3D/Statue.glb' )
   let statue = glb.scene
 
