@@ -85,38 +85,38 @@ const loader = new GLTFLoader();
 const dracoLoader = new DRACOLoader();
 dracoLoader.setDecoderPath('https://www.gstatic.com/draco/v1/decoders/'); 
 loader.setDRACOLoader(dracoLoader);
+window.addEventListener('DOMContentLoaded', () => {
+  const request = indexedDB.open("threejs-editor", 1);
 
-const request = indexedDB.open("threejs-editor", 1);
+  request.onupgradeneeded = (event) => {
+      const db = event.target.result;
+      
+      if (!db.objectStoreNames.contains("states")) {
+        db.createObjectStore("states");
+    }
+    createEditor(new THREE.Group(),true)
 
-request.onupgradeneeded = (event) => {
-    const db = event.target.result;
-    
-    if (!db.objectStoreNames.contains("states")) {
-      db.createObjectStore("states");
-  }
-  createEditor(new THREE.Group(),true)
-
-};
+  };
 
 
-request.onsuccess = (event) => {
-    db = event.target.result;
-    let tx = db.transaction('states', 'readwrite');
-    const sceneData = tx.objectStore('states');
-    let data = sceneData.get(0)
-    data.onsuccess = async () => {
-      if(data.result){
-        let laoder = new THREE.ObjectLoader()
-        let kadf = laoder.parse(data.result)
-        createEditor(kadf,false,data.result)
+  request.onsuccess = (event) => {
+      db = event.target.result;
+      let tx = db.transaction('states', 'readwrite');
+      const sceneData = tx.objectStore('states');
+      let data = sceneData.get(0)
+      data.onsuccess = async () => {
+        if(data.result){
+          let laoder = new THREE.ObjectLoader()
+          let kadf = laoder.parse(data.result)
+          createEditor(kadf,false,data.result)
 
-      }
+        }
 
-      // save scene status and load it 
+        // save scene status and load it 
 
-    };
-};
-
+      };
+  };
+})
 async function createEditor(mainscene,initialization,rawObject){
   let appElement = document.getElementById("app")
   let objectContainer = document.getElementById('ObjectsContainer')
