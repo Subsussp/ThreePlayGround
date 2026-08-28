@@ -112,6 +112,7 @@ async function createEditor(mainscene,initialization,rawObject){
   const fbxLoader = new FBXLoader();
   const stloader = new STLLoader();
   const objLoader = new OBJLoader();
+  const plyLoader = new PLYLoader();
   const loader = new GLTFLoader();
   const dracoLoader = new DRACOLoader();
   dracoLoader.setDecoderPath('https://www.gstatic.com/draco/v1/decoders/'); 
@@ -151,6 +152,7 @@ async function createEditor(mainscene,initialization,rawObject){
   let animationId;
   let controls;
   let TC;
+  
   let selectionBox;
   let renderer = new THREE.WebGLRenderer({antialias:true})
   const spriteTexture =new THREE.TextureLoader().load("textures/sprite.jpg");
@@ -3526,7 +3528,7 @@ sceneAddSection += `scene.add(${fileNameWithoutExtention}.scene)\n`
       }
   }
 
-  function uploadListener(e){
+  function uploadListener(e){ 
     for (let i = 0; i < e.target.files.length; i++) {
       const element = e.target.files[i];
       fileName = element.name
@@ -3567,27 +3569,38 @@ sceneAddSection += `scene.add(${fileNameWithoutExtention}.scene)\n`
           break; 
         case 'stl' :
           stloader.load( blobUrl,(e)=>{
-            e.userData.fileExtention = extention
-            e.userData.isFileImport = true
-            e.userData.fileName = fileNameWithoutExtention.replaceAll('.','_')
+            let stlMesh;
             if ( e.hasColors ) {
               material = new THREE.MeshPhongMaterial( { opacity: e.alpha, vertexColors: true } );
-              let mesh = new THREE.Mesh( e, material );
-              mainScene.add(mesh);
+              stlMesh = new THREE.Mesh( e, material );
             }else{
-              mainScene.add(new THREE.Mesh( e ) );
+              stlMesh = new THREE.Mesh( e ) ;
             }
+            stlMesh.userData.fileExtention = extention
+            stlMesh.userData.isFileImport = true
+            stlMesh.userData.fileName = fileNameWithoutExtention.replaceAll('.','_')
+            chosenLayer = stlMesh
+
+            mainScene.add(stlMesh);
           } )
 
           break; 
         case 'ply':
+          plyLoader.load( blobUrl,(e)=>{            
+            let plyMesh = new THREE.Mesh( e )
+            plyMesh.userData.fileExtention = extention
+            plyMesh.userData.isFileImport = true
+            plyMesh.userData.fileName = fileNameWithoutExtention.replaceAll('.','_')
+            chosenLayer = plyMesh
+            
+            mainScene.add(plyMesh);
+          })
           break; 
         default:
           break;
       }
-
-
     }
+    e.target.value = ''
   }
 
 
@@ -4063,7 +4076,6 @@ sceneAddSection += `scene.add(${fileNameWithoutExtention}.scene)\n`
           instantIndex = cords[3]
           instantCords = cords
           let positions = intersect.object.geometry.attributes.position
-          console.log('it intersects');
           
           if(mouseIsDown){
             index == undefined && (index = instantIndex)
