@@ -206,7 +206,8 @@ async function createEditor(mainscene,initialization,rawObject){
   document.querySelectorAll('.export').forEach((e)=>{    
     e.addEventListener('mouseup',async (element)=>{
       element.stopPropagation()
-      if(element.target.innerText == 'drc'){
+      let exportFileExtention = element.target.innerText
+      if(exportFileExtention.toLowerCase() == 'drc'){
         const { DRACOExporter } = await import( 'three/addons/exporters/DRACOExporter.js' );
         let exporter = new DRACOExporter()
         console.log(chosenLayer);
@@ -222,8 +223,19 @@ async function createEditor(mainscene,initialization,rawObject){
       };
         let data = await exporter.parseAsync(chosenLayer,options);
         saveBuffer(data, 'model.drc')
-      }else if(element.target.innerText == 'glf'){
-
+      }else if(exportFileExtention.toLowerCase() == 'gltf' || exportFileExtention.toLowerCase() == 'gltf' ){
+        const { GLTFExporter } = await import( 'three/addons/exporters/GLTFExporter.js' );
+        let exporter = new GLTFExporter();
+        const copyOfChildren = mainScene.children.filter((child) => {
+            return !(
+                child?.isTransformControls ||
+                child.name === "TransformControlsHelper" ||
+                child?.userData?.isVertexNormalsHelper
+            );
+        });
+        exporter.parse(copyOfChildren,function (result){
+          saveBuffer(exportFileExtention == 'GLTF' ? JSON.stringify(result, null, 2) : result, `scene.${element.target.innerText}`)
+        })
       }
 
     })
@@ -3577,8 +3589,7 @@ sceneAddSection += `scene.add(${fileNameWithoutExtention}.scene)\n`
       switch (extention) {
         case 'glb' :
         case 'gltf' :
-          loader.load(blobUrl,(e)=>{
-            // e.scene.skip = true
+          loader.load(blobUrl,(e)=>{            
             e.scene.userData.fileExtention = extention
             e.scene.userData.isFileImport = true
             e.scene.userData.fileName = fileNameWithoutExtention.replaceAll('.','_')
