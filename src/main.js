@@ -204,10 +204,13 @@ async function createEditor(mainscene,initialization,rawObject){
     functionAfterPhotoUpload(url)
 })
   document.querySelectorAll('.export').forEach((e)=>{    
-    e.addEventListener('click',async (element)=>{
+    e.addEventListener('mouseup',async (element)=>{
+      element.stopPropagation()
       if(element.target.innerText == 'drc'){
         const { DRACOExporter } = await import( 'three/addons/exporters/DRACOExporter.js' );
         let exporter = new DRACOExporter()
+        console.log(chosenLayer);
+        
         const options = {
           decodeSpeed: 5,
           encodeSpeed: 5,
@@ -215,7 +218,7 @@ async function createEditor(mainscene,initialization,rawObject){
           quantization: [ 16, 8, 8, 8, 8 ],
           exportUvs: true,
           exportNormals: true,
-          exportColor: object.geometry.hasAttribute( 'color' )
+          exportColor: chosenLayer.geometry.hasAttribute( 'color' )
       };
         let data = await exporter.parseAsync(chosenLayer,options);
         saveBuffer(data, 'model.drc')
