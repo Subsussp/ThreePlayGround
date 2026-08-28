@@ -16,7 +16,7 @@ a web-based 3D editor built from scratch on top of [**Three.js**
 # How to use it 
 You can simply visit the website :) 
 
-[![Click Here](https://img.shields.io/badge/Click%20Here-blue?style=for-the-badge&logo=vercel)]()
+[![Click Here](https://img.shields.io/badge/Click%20Here-blue?style=for-the-badge&logo=vercel)](https://subsussp.github.io/ThreePlayGround/)
  
 
 
