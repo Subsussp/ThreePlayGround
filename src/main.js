@@ -13,7 +13,6 @@ import { PLYLoader } from 'three/addons/loaders/PLYLoader.js';
 import { STLLoader } from 'three/addons/loaders/STLLoader.js';
 import { SVGLoader } from 'three/addons/loaders/SVGLoader.js';
 import { OBJLoader } from 'three/addons/loaders/OBJLoader.js';
-import { DRACOExporter, DRACOExporter } from 'three/addons/exporters/DRACOExporter.js';
 import { GLTFExporter } from 'three/addons/exporters/GLTFExporter.js';
 import { STLExporter } from 'three/addons/exporters/STLExporter.js';
 import { PLYExporter } from 'three/addons/exporters/PLYExporter.js';
@@ -73,12 +72,10 @@ let SCENE_DEFAULT_BACKGROUND_COLOR = new THREE.Color('#333333')
 
 
 const exporters = {
-    drc: new DRACOExporter(),
     gltf: new GLTFExporter(),
     obj: new OBJExporter(),
     stl: new STLExporter(),
     ply: new PLYExporter(),
-
 };
 const fbxLoader = new FBXLoader();
 const stloader = new STLLoader();
@@ -119,6 +116,7 @@ request.onsuccess = (event) => {
 
     };
 };
+
 async function createEditor(mainscene,initialization,rawObject){
   let appElement = document.getElementById("app")
   let objectContainer = document.getElementById('ObjectsContainer')
@@ -176,7 +174,7 @@ async function createEditor(mainscene,initialization,rawObject){
   const code = document.querySelector("#language-js");
 
   let copyTimeout;
-
+  // Elements Event Listeners
   copyButton.addEventListener("click", async () => {
       try {
           await navigator.clipboard.writeText(code.textContent);
@@ -200,11 +198,33 @@ async function createEditor(mainscene,initialization,rawObject){
     saveSceneState()
   })
   Photo.addEventListener('change', (event) => {
-  const file = event.target.files[0];
-  if (!file) return;
-  const url = URL.createObjectURL(file);
-  functionAfterPhotoUpload(url)
+    const file = event.target.files[0];
+    if (!file) return;
+    const url = URL.createObjectURL(file);
+    functionAfterPhotoUpload(url)
 })
+  document.querySelectorAll('.export').forEach((e)=>{    
+    e.addEventListener('click',async (element)=>{
+      if(element.target.innerText == 'drc'){
+        const { DRACOExporter } = await import( 'three/addons/exporters/DRACOExporter.js' );
+        let exporter = new DRACOExporter()
+        const options = {
+          decodeSpeed: 5,
+          encodeSpeed: 5,
+          encoderMethod: DRACOExporter.MESH_EDGEBREAKER_ENCODING,
+          quantization: [ 16, 8, 8, 8, 8 ],
+          exportUvs: true,
+          exportNormals: true,
+          exportColor: object.geometry.hasAttribute( 'color' )
+      };
+        let data = await exporter.parseAsync(chosenLayer,options);
+        saveBuffer(data, 'model.drc')
+      }else if(element.target.innerText == 'glf'){
+
+      }
+
+    })
+  })
   // delete the loaderMap after you finish
   let loaderMap = {
     glb: 'GLTFLoader',
@@ -4243,3 +4263,14 @@ sceneAddSection += `scene.add(${fileNameWithoutExtention}.scene)\n`
   }
   }
 
+function saveBuffer(data,downloadFileName){
+    const blob = new Blob([data], {
+    type: 'application/octet-stream'
+  })
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a')
+    a.href = url
+    a.download = downloadFileName
+    a.click()
+    URL.revokeObjectURL(url)
+}
