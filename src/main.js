@@ -3058,7 +3058,7 @@ const materialDefaultProperties = {
           let Ymulti = initialMouseYPosition - event.clientY
           initialMouseXPosition = event.clientX 
           initialMouseYPosition = event.clientY
-          numberInputValueControl(event,numberInput,key.includes('Segments') ? 1 :0.1,1,1000,key,Xmulti,Ymulti,key.includes('Segments') ? 0 : undefined)
+          numberInputValueControl(event,numberInput,key.includes('Segments') ? 1 :0.020,key.includes('Segments') ? 1 :0.0,1000,key,Xmulti,Ymulti,key.includes('Segments') ? 0 : undefined)
           properties[key] = numberInput.value
           object.geometry = new THREE[object.geometry.type](...Object.values(properties))
         }
@@ -4111,12 +4111,44 @@ composer.addPass( ${effect.constructor.name} )
     // End of Export Code 
 
 
-    [...mainScene.children].forEach((child)=>{ 
-      if(child.userData.isLightHelper){
-        child.removeFromParent()
-        return null
+    [...mainScene.children].forEach((child)=>{
+      
+      if(child.isMesh){
+        if(child.geometry && child.children.length < 1){
+          let positions = child.geometry.attributes.position.array
+          let unique = [];
+          let seen = new Set();
+          for (let i = 0; i < positions.length; i += 3) {
+              let x = positions[i];
+              let y = positions[i + 1];
+              let z = positions[i + 2];
+              let key = `${x},${y},${z}`;
+              if (!seen.has(key)) {
+                  seen.add(key);
+                  unique.push([x, y, z,i / 3]);
+              }
+          }
+          unique.forEach((cord)=>{              
+            let buffer = new THREE.BufferGeometry()
+            let vertices = new Float32Array([
+              cord[0],cord[1],cord[2]
+            ])
+            buffer.setAttribute('position', new THREE.BufferAttribute(vertices, 3))
+            const geometry = new THREE.SphereGeometry(0.020, 8, 8);
+            let points = new THREE.Mesh( geometry,new THREE.MeshBasicMaterial({color: 'grey'}))
+            points.position.set( cord[0],cord[1],cord[2])
+            points.userData.skip = true
+            points.userData.index = cord[3]
+            points.userData.vertexVisual = true
+            child.add(points)
+          })                    
+        }
+          
       }
-
+        if(child.userData.isLightHelper){
+          child.removeFromParent()
+          return null
+        }
         if (child.isPointLight) {
           let geometry = new THREE.SphereGeometry(2,4,2)
           let material = new THREE.MeshBasicMaterial({color: 'white',visible:false})
@@ -4236,7 +4268,8 @@ composer.addPass( ${effect.constructor.name} )
               );
               rayCast.ray.intersectPlane(dragPlane, point);
             }
-
+              let THEpoint = intersect.object.children.find((child)=>index.includes(child.userData.index))        
+                
             // visual feedback (points) update 
             // intersect.object.children.forEach((childpoint)=>{
             //   let pointCords = childpoint.geometry.attributes.position.array
@@ -4245,11 +4278,15 @@ composer.addPass( ${effect.constructor.name} )
             //       childpoint.geometry.attributes.position.needsUpdate = true
             //     }
             //   })
-            for (let i = 0; i < index.length; i++) {              
+            for (let i = 0; i < index.length; i++) {      
                 intersect.object.geometry.attributes.position.setXYZ(index[i],point.x ,point.y,point.z)
                 intersect.object.geometry.attributes.position.needsUpdate = true;
             }
+            // THEpoint.geometry.attributes.position.setXYZ(0,point.x ,point.y,point.z)
+            THEpoint.position.set(point.x ,point.y,point.z)
 
+            // THEpoint.geometry.attributes.position.needsUpdate = true;
+    
           }
     
         })
@@ -4271,10 +4308,15 @@ composer.addPass( ${effect.constructor.name} )
             //       childpoint.geometry.attributes.position.needsUpdate = true
             //     }
             //   })
+            let THEpoint = child.children.find((child)=>index.includes(child.userData.index))        
+
             for (let i = 0; i < index.length; i++) {              
                 child.geometry.attributes.position.setXYZ(index[i],point.x ,point.y,point.z)
                 child.geometry.attributes.position.needsUpdate = true
             }
+            THEpoint.position.set(point.x ,point.y,point.z)
+            // THEpoint.geometry.attributes.position.needsUpdate = true;
+    
           }else{
             if(firstMouseDown){
               mouseIsDown = false
