@@ -241,7 +241,8 @@ input.Number::selection {
 
 #objectPanel,
 #geometryPanel,
-#materialPanel {
+#materialPanel
+ {
     height: 100%;
     display: none;
     flex-direction: column;
@@ -342,7 +343,7 @@ input.Number::selection {
     background-color: var(--mainBackground);
 }
 #effectsPanel {
-    display: flex;
+    display: none;
     flex-direction: column;
     gap: 4px;
 

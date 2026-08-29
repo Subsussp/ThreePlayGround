@@ -1491,7 +1491,7 @@ const materialDefaultProperties = {
           name: 'Vignette',
           stringParams: ``,
           create: () => {
-              const pass = new ShaderPass();
+              const pass = new ShaderPass(VignetteShader);
               pass.uniforms.darkness.value = 1.9;
               pass.uniforms.offset.value = 2.0;
               return pass;
@@ -2859,7 +2859,7 @@ const materialDefaultProperties = {
   function createObjectPanel(object,panelContainer){
     let panel = document.createElement('div')
     panel.id = 'objectPanel'  
-    // name
+    // name & uuid 
     let row = createRow('name')
     let keyElement = createKeyElement('name')
     let TextInput = createTextInput()
@@ -2879,8 +2879,20 @@ const materialDefaultProperties = {
       layerContainer.querySelector(`[data-uuid="${chosenLayer.uuid}"] #LayerName`).innerHTML = object['name']
     })
     row.append(keyElement,TextInput)
-    panel.append(row,row1)
+    panel.appendChild(row)
+    // type 
+    if(object?.type){
+      let typeRow = createRow('type')
+      let tkeyElement = createKeyElement('type')
+      let tTextInput = createTextInput()
+      tTextInput.value = object.type
+      tTextInput.disabled = true
+      typeRow.append(tkeyElement,tTextInput)
+      panel.appendChild(typeRow)
+    }
 
+
+    panel.appendChild(row1)
     // position
     createRowWith3args(object,[object.position.x,object.position.y,object.position.z],panel,'position',.020)
 
@@ -4067,9 +4079,6 @@ let controls = new OrbitControls( camera, renderer.domElement );
 
 `
       if(mainComposer){
-        console.log(mainComposer);
-        console.log(effectsNames);
-        
         mainComposer.passes.forEach((effect)=>{
         importSection += `import { ${effect.constructor.name} } from 'three/addons/shaders/${effect.constructor.name}.js';
 `
