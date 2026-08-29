@@ -174,8 +174,11 @@ async function createEditor(mainscene,initialization,rawObject){
   const spriteTexture =new THREE.TextureLoader().load("textures/sprite.jpg");
   const copyButton = document.querySelector(".copy-button");
   const code = document.querySelector("#language-js");
+  let codecont = document.getElementById('language-jsContain')
+  let out = false
 
   let copyTimeout;
+
   // Elements Event Listeners
   copyButton.addEventListener("click", async () => {
       try {
@@ -205,6 +208,8 @@ async function createEditor(mainscene,initialization,rawObject){
     const url = URL.createObjectURL(file);
     functionAfterPhotoUpload(url)
 })
+codecont.addEventListener('mouseover',(e)=>out = false)
+codecont.addEventListener('mouseout',(e)=>out = true)
   document.querySelectorAll('.export').forEach((e)=>{    
     e.addEventListener('mouseup',async (element)=>{
       element.stopPropagation()
@@ -1427,9 +1432,16 @@ const materialDefaultProperties = {
 
       bloom: {
           name: 'Bloom',
+          stringParams:`new THREE.Vector2(
+                      renderer.domElement.width,
+                      renderer.domElement.height
+                  ),
+                  1,
+                  0.79,
+                  0.85`,
           create: (renderer, scene, camera) => {
               return new UnrealBloomPass(
-                  new THREE.Vector2(
+                new THREE.Vector2(
                       renderer.domElement.width,
                       renderer.domElement.height
                   ),
@@ -1442,6 +1454,11 @@ const materialDefaultProperties = {
 
       depthOfField: {
           name: 'Depth of Field',
+          stringParams: `scene, camera, {
+                  focus: 4,
+                  aperture: 0.0001,
+                  maxblur: 0.01
+              }`,
           create: (renderer, scene, camera) => {
               return new BokehPass(scene, camera, {
                   focus: 4,
@@ -1453,6 +1470,7 @@ const materialDefaultProperties = {
 
       motionBlur: {
           name: 'Motion Blur',
+          stringParams: `0.95`, 
           create: () => {
               return new AfterimagePass(0.95);
           }
@@ -1460,6 +1478,7 @@ const materialDefaultProperties = {
 
       chromaticAberration: {
           name: 'Chromatic Aberration',
+          stringParams: `RGBShiftShader`,
           create: () => {
               const pass = new ShaderPass(RGBShiftShader);
               pass.uniforms.amount.value = 0.02;
@@ -1470,8 +1489,9 @@ const materialDefaultProperties = {
 
       vignette: {
           name: 'Vignette',
+          stringParams: ``,
           create: () => {
-              const pass = new ShaderPass(VignetteShader);
+              const pass = new ShaderPass();
               pass.uniforms.darkness.value = 1.9;
               pass.uniforms.offset.value = 2.0;
               return pass;
@@ -1480,6 +1500,7 @@ const materialDefaultProperties = {
 
       filmGrain: {
           name: 'Film Grain',
+          stringParams:`1.0,false`,
           create: () => {
               return new FilmPass(
                   1.0,
@@ -1490,6 +1511,7 @@ const materialDefaultProperties = {
 
       brightnessContrast: {
           name: 'Brightness / Contrast',
+          stringParams: `BrightnessContrastShader`,
           create: () => {
               const pass = new ShaderPass(BrightnessContrastShader);
               pass.uniforms.brightness.value = 0.1;
@@ -1500,6 +1522,7 @@ const materialDefaultProperties = {
 
       hueSaturation: {
           name: 'Hue / Saturation',
+          stringParams: `HueSaturationShader`,
           create: () => {
               const pass = new ShaderPass(HueSaturationShader);
               pass.uniforms.saturation.value = 0.8;
@@ -1513,6 +1536,10 @@ const materialDefaultProperties = {
 
       ssao: {
           name: 'SSAO',
+          stringParams:`scene,
+                  camera,
+                  renderer.domElement.width,
+                  renderer.domElement.height`,
           create: (renderer, scene, camera) => {
               const pass = new SSAOPass(
                   scene,
@@ -1531,6 +1558,7 @@ const materialDefaultProperties = {
 
       glitch: {
           name: 'Glitch',
+          stringParams:``,
           create: () => {
               const pass = new GlitchPass();
               pass.goWild = false;
@@ -1540,6 +1568,7 @@ const materialDefaultProperties = {
 
       fxaa: {
           name: 'FXAA',
+          stringParams:``,
           create: () => {
               return new FXAAPass();
           }
@@ -1547,6 +1576,8 @@ const materialDefaultProperties = {
 
       smaa: {
           name: 'SMAA',
+          stringParams:`renderer.domElement.width,
+  renderer.domElement.height`,
           create: (renderer) => {
               return new SMAAPass(
                   renderer.domElement.width,
@@ -1557,6 +1588,18 @@ const materialDefaultProperties = {
 
       halftone: {
           name: 'Halftone',
+          stringParams:`{
+  shape: 1,
+  radius: 0.2,
+  rotateR: Math.PI / 12,
+  rotateG: Math.PI / 12,
+  rotateB: Math.PI / 12,
+  scatter: 1,
+  blending: 1,
+  blendingMode: 1,
+  greyscale: false,
+  disable: false
+              }`,
           create: () => {
               return new HalftonePass({
                   shape: 1,
@@ -1575,6 +1618,7 @@ const materialDefaultProperties = {
 
       dotScreen: {
           name: 'Dot Screen',
+          stringParams:`DotScreenShader`,
           create: () => {
               const pass = new ShaderPass(DotScreenShader);
               pass.uniforms.scale.value = 1;
@@ -1585,6 +1629,7 @@ const materialDefaultProperties = {
 
       sepia: {
           name: 'Sepia',
+          stringParams:`SepiaShader`,
           create: () => {
               const pass = new ShaderPass(SepiaShader);
               pass.uniforms.amount.value = 1;
@@ -1594,6 +1639,7 @@ const materialDefaultProperties = {
 
       colorify: {
           name: 'Colorify',
+          stringParams:`ColorifyShader`,
           create: () => {
               const pass = new ShaderPass(ColorifyShader);
               pass.uniforms.color.value.set(0xffffff);
@@ -1603,6 +1649,7 @@ const materialDefaultProperties = {
 
       technicolor: {
           name: 'Technicolor',
+          stringParams:`TechnicolorShader`,
           create: () => {
               return new ShaderPass(TechnicolorShader);
           }
@@ -1610,6 +1657,7 @@ const materialDefaultProperties = {
 
       bleachBypass: {
           name: 'Bleach Bypass',
+          stringParams:`BleachBypassShader`,
           create: () => {
               return new ShaderPass(BleachBypassShader);
           }
@@ -1617,6 +1665,7 @@ const materialDefaultProperties = {
 
       kaleido: {
           name: 'Kaleidoscope',
+          stringParams:`KaleidoShader`,
           create: () => {
               const pass = new ShaderPass(KaleidoShader);
               pass.uniforms.sides.value = 6;
@@ -2213,7 +2262,6 @@ const materialDefaultProperties = {
             let specialEffect = effects[objects[i]].create(mainRenderer,mainScene,mainCamera)
             effectsNames.push(objects[i])
             mainComposer.addPass( specialEffect )
-            
             let outputPass = new OutputPass()
             mainComposer.addPass( outputPass )
             saveSceneState()
@@ -3492,11 +3540,11 @@ sceneAddSection += `scene.add(${fileNameWithoutExtention}.scene)\n`
   }
   function handleAnimate() {
     animateSection = `function animate(){
-      requestAnimationFrame(animate)
-      controls.update();
-      ${mainComposer ? 'composer.render()' : 'renderer.render(scene,camera)'
-    }
-    animate()`
+  requestAnimationFrame(animate)
+  controls.update();
+  ${mainComposer ? 'composer.render()' : 'renderer.render(scene,camera)'}
+}
+animate()`
   }
   function generateName(name) {
     if(Object.hasOwn(names,name)){
@@ -4002,40 +4050,44 @@ sceneAddSection += `scene.add(${fileNameWithoutExtention}.scene)\n`
     // Export Code 
     document.getElementById('export-code').addEventListener('click',(event)=>{
       document.getElementById('language-jsContain').hidden = false
+      let text = ``
       exportCode = ``
-      importSection = ``
-      codeSection = `let scene = new THREE.Scene()
-let ${mainCamera.type} = new THREE.${mainCamera.type}(${[...mainCameraParam]})
+      importSection = `import * as THREE from "three";
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+`;
+      codeSection = `\nlet scene = new THREE.Scene()
+let camera = new THREE.${mainCamera.type}(${[...mainCameraParam]})
+
 let renderer = new THREE.${mainRenderer.constructor.name}()
 renderer.setSize(window.innerWidth,window.innerHeight)
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 document.body.appendChild(renderer.domElement)
 
+let controls = new OrbitControls( camera, renderer.domElement );
+
 `
+      if(mainComposer){
+        console.log(mainComposer);
+        console.log(effectsNames);
+        
+        mainComposer.passes.forEach((effect)=>{
+        importSection += `import { ${effect.constructor.name} } from 'three/addons/shaders/${effect.constructor.name}.js';
+`
+        text += `let composer = new EffectComposer(renderer)
+let ${effect.constructor.name} = new ${effect.constructor.name}(scene,camera)
+composer.addPass( ${effect.constructor.name} )
+
+`
+        })
+      }
       sceneAddSection = ``
       animateSection = ``
       mainScene.children.forEach(handleExport)
-      handleAnimate()
       exportCode += importSection 
       exportCode += codeSection 
       exportCode += sceneAddSection 
-      if(mainComposer){
-        console.log(mainComposer);
-        let text = ``
-        mainComposer.passes.forEach((effect)=>{
-          text += `let ${effect.constructor.name} = new ${effect.constructor.name}(scene,camera)
-composer.addPass( renderPass )
-          `
-        })
-        exportCode += `let composer = new EffectComposer(renderer)
-            
-            let specialEffect = ${JSON.stringify(effects[objects[i]].create(renderer,scene,camera))}
-            effectsNames.push()
-            composer.addPass( specialEffect )
-            
-            let outputPass = new OutputPass()
-            composer.addPass( outputPass )`
-      }
+      exportCode += text
+      handleAnimate()
       exportCode += animateSection 
       let codeExportElement = document.getElementById('language-js')
       codeExportElement.textContent = exportCode
@@ -4243,6 +4295,7 @@ composer.addPass( renderPass )
       }
     })
     window.addEventListener('mouseup',(event)=>{
+      out && (codecont.hidden = true)
       if(!isInsideCanvas(event.clientX))return
       controls.enabled = true
       firstMouseDown = true
