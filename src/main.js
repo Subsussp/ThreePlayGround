@@ -2569,6 +2569,7 @@ const materialDefaultProperties = {
       label.innerHTML ='Object'
       meshComponentContainer.appendChild(label)
       label.addEventListener("click",selectLabel)
+      console.log(chosenLayer)
       createObjectPanel(chosenLayer,panelContainer)
       if(chosenLayer?.geometry) {
         let label = document.createElement('div')
@@ -4143,7 +4144,6 @@ import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
 `;
       codeSection = `\nlet scene = new THREE.Scene()
 let camera = new THREE.${mainCamera.type}(${[...mainCameraParam]})
-
 let renderer = new THREE.${mainRenderer.constructor.name}()
 renderer.setSize(window.innerWidth,window.innerHeight)
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -4152,12 +4152,13 @@ document.body.appendChild(renderer.domElement)
 let controls = new OrbitControls( camera, renderer.domElement );
 
 `
+changeIfNotDefaultTransformValues(mainCamera,'camera')
       if(mainComposer){
         text = `let composer = new EffectComposer(renderer)
 `
-        mainComposer.passes.forEach((effect)=>{
+        mainComposer.passes.forEach((effect,i)=>{
         importSection += `import { ${effect.constructor.name} } from 'three/addons/${getAddonType(effect.constructor.name)}/${effect.constructor.name}.js'\n`;
-        text +=`let ${effect.constructor.name.toLowerCase()} = new ${effect.constructor.name}(scene,camera)
+        text +=`let ${effect.constructor.name.toLowerCase()} = new ${effect.constructor.name}( ${ i != 0 && i != (mainComposer.passes.length -1)? effects[effectsNames[i - 1]].stringParams : i == (mainComposer.passes.length -1) ? '': 'scene,camera'})
 composer.addPass( ${effect.constructor.name.toLowerCase()} )
 
 `
