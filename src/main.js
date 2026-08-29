@@ -1675,6 +1675,77 @@ const materialDefaultProperties = {
       }
 
   };
+  const addonTypes = {
+  postprocessing: [
+    'EffectComposer',
+    'RenderPass',
+    'ShaderPass',
+    'AfterimagePass',
+    'BloomPass',
+    'BokehPass',
+    'ClearPass',
+    'DotScreenPass',
+    'FilmPass',
+    'GlitchPass',
+    'HalftonePass',
+    'LUTPass',
+    'MaskPass',
+    'OutlinePass',
+    'OutputPass',
+    'PixelationPass',
+    'RenderPixelatedPass',
+    'SAOPass',
+    'SSAARenderPass',
+    'SSAOPass',
+    'SSRPass',
+    'SavePass',
+    'SMAAPass',
+    'TAARenderPass',
+    'TexturePass',
+    'UnrealBloomPass',
+  ],
+
+  shaders: [
+    'AfterimageShader',
+    'BleachBypassShader',
+    'BlendShader',
+    'BokehShader',
+    'BrightnessContrastShader',
+    'ColorCorrectionShader',
+    'ColorifyShader',
+    'ConvolutionShader',
+    'CopyShader',
+    'DigitalGlitch',
+    'DotScreenShader',
+    'FilmShader',
+    'FocusShader',
+    'FreiChenShader',
+    'GammaCorrectionShader',
+    'GodRaysShader',
+    'HalftoneShader',
+    'HorizontalBlurShader',
+    'HorizontalTiltShiftShader',
+    'HueSaturationShader',
+    'KaleidoShader',
+    'LuminosityShader',
+    'LuminosityHighPassShader',
+    'MirrorShader',
+    'PixelShader',
+    'RGBShiftShader',
+    'SepiaShader',
+    'SobelOperatorShader',
+    'SSAOShader',
+    'SSRShader',
+    'TechnicolorShader',
+    'ToonShader',
+    'TrianglesDrawShader',
+    'UnpackDepthRGBAShader',
+    'VerticalBlurShader',
+    'VerticalTiltShiftShader',
+    'VignetteShader',
+    'VolumeShader',
+  ]
+};
   let lights = {
     AmbientLight:{
       args: [ 0x404040 , 10],
@@ -2826,9 +2897,7 @@ const materialDefaultProperties = {
     if(key != "rotation" ){
         object[key]['set'+ 'x'.toUpperCase()](+e.target.value)
       }else{
-        e.target.value = e.target.value.replace('°','')
-        object[key]['x'] = +(e.target.value) / 180 * Math.PI 
-        e.target.value = (+e.target.value).toFixed(2) + '°'
+        object[key]['x'] = +(e.target.value.replace('°','')) / 180 * Math.PI 
       }
       selectionBox.update()
     })
@@ -2836,9 +2905,7 @@ const materialDefaultProperties = {
       if(key != "rotation" ){
         object[key]['set'+ 'y'.toUpperCase()](+e.target.value)
       }else{
-        e.target.value = e.target.value.replace('°','')
-        object[key]['y'] = +(e.target.value) / 180 * Math.PI 
-        e.target.value = (+e.target.value).toFixed(2) + '°'
+        object[key]['y'] = +(e.target.value.replace('°','')) / 180 * Math.PI 
       }
       selectionBox.update()
     })
@@ -2846,9 +2913,7 @@ const materialDefaultProperties = {
       if(key != "rotation" ){
         object[key]['set'+ 'z'.toUpperCase()](+e.target.value)
       }else{
-        e.target.value = e.target.value.replace('°','')
-        object[key]['z'] = +(e.target.value) / 180 * Math.PI 
-        e.target.value = (+e.target.value).toFixed(2) + '°'
+        object[key]['z'] = +(e.target.value.replace('°','')) / 180 * Math.PI 
       }
       selectionBox.update()
     })
@@ -2952,7 +3017,6 @@ const materialDefaultProperties = {
             initialMouseYPosition = event.clientY
             numberInputValueControl(event,number,lightProperties[object.type][key].step,lightProperties[object.type][key].min,lightProperties[object.type][key].max,key,Xmulti,Ymulti)
             changeObjectValue(object,key,number)
-            // IMPORTANT! change the light object values
 
           }
           number.addEventListener('mousedown',(e)=>{
@@ -3237,7 +3301,7 @@ const materialDefaultProperties = {
       }
       if(property[1].type === "number"){
         let number = createNumberInput(propValue)
-        number.addEventListener('change',(e)=>{
+        number.addEventListener('input',(e)=>{
           objectMaterial[propertyName] = +number.value
         })
         function valueHandler(event) {
@@ -3497,11 +3561,11 @@ const materialDefaultProperties = {
 
       if(Array.isArray(MatValue) && Array.isArray(propertyValues)){
         if(!checkIfArraysEqual(MatValue,propertyValues)){
-          finalParamObject += `${propertyName}: ${valueText ?? MatValue}\n`
+          finalParamObject += `${propertyName}: ${valueText ?? MatValue},\n`
         }
       }
       else if(MatValue !== propertyValues){
-        finalParamObject += `${propertyName}: ${valueText ?? MatValue}\n`
+        finalParamObject += `${propertyName}: ${valueText ?? MatValue},\n`
       }
     });
     finalParamObject += '}'
@@ -4067,6 +4131,7 @@ animate()`
 
     // Export Code 
     document.getElementById('export-code').addEventListener('click',(event)=>{
+      event.stopPropagation()
       document.getElementById('language-jsContain').hidden = false
       let text = ``
       exportCode = ``
@@ -4086,7 +4151,7 @@ let controls = new OrbitControls( camera, renderer.domElement );
 `
       if(mainComposer){
         mainComposer.passes.forEach((effect)=>{
-        importSection += `import { ${effect.constructor.name} } from 'three/addons/shaders/${effect.constructor.name}.js';
+        importSection += `import { ${effect.constructor.name} } from 'three/addons/${getAddonType(effect.constructor.name)}/${effect.constructor.name}.js';
 `
         text += `let composer = new EffectComposer(renderer)
 let ${effect.constructor.name} = new ${effect.constructor.name}(scene,camera)
@@ -4120,9 +4185,9 @@ composer.addPass( ${effect.constructor.name} )
     [...mainScene.children].forEach((child)=>{
       
       if(child.isMesh){
-        if(child.geometry && child.children.length < 1){
-          console.log(child);
-          
+        let checkForCustomPoints = child.children.find((child)=>child.userData.vertexVisual)
+        
+        if(child.geometry && !checkForCustomPoints ){          
           let positions = child.geometry.attributes.position.array
           let unique = [];
           let seen = new Set();
@@ -4226,7 +4291,7 @@ composer.addPass( ${effect.constructor.name} )
       saveSceneState()
     }
 
-      let mouseIsDown = false
+    let mouseIsDown = false
     let firstMouseDown = true
     let referencePoint;
     let index;
@@ -4381,7 +4446,13 @@ composer.addPass( ${effect.constructor.name} )
       })
     return exist
   }
+  function getAddonType(name) {
+    for (const [type, names] of Object.entries(addonTypes)) {
+      if (names.includes(name)) return type;
+    }
 
+    return null;
+  }
   function checkIfValidPoint(object,point) {
     let positions = object.geometry.attributes.position.array
     let found = false;
