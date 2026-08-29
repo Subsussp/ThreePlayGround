@@ -2671,7 +2671,7 @@ const materialDefaultProperties = {
         select.addEventListener('change',(event)=>{
           settings.wireframe = event.target.value === "true"
           mainScene.traverse((object)=>{
-              if (!object.material || object?.type.includes("Grid") || object?.type.includes("Axes")) return;
+              if (!object.material || object?.type.includes("Grid") || object?.type.includes("Axes") || object?.name !== 'TransformControlsHelper') return;
               if (Array.isArray(object.material)) {
                   object.material.forEach((material) => {
                       material.wireframe = settings.wireframe;
@@ -3590,7 +3590,7 @@ animate()`
     return child.scale.x !== 1 || child.scale.y !== 1  || child.scale.z !== 1
   }
   function layerFiltering(e){        
-      if(!e?.isCamera && !e?.userData.isLightHelper && !e?.controls && !e?.type.includes("Grid") && !e?.type.includes("Axes") && e?.name !== 'TransformControlsHelper'&& !e?.isTransformControlsRoot && !e?.userData.skip ){ 
+      if(!e?.isCamera && !e?.userData.isLightHelper && !e?.controls && !e?.type.includes("Grid") && !e?.type.includes("Axes") && e?.name !== 'TransformControlsHelper' && !e?.isTransformControlsRoot && !e?.userData.skip ){ 
         
         if(!layerObjects.includes(e.uuid)){
           layerObjects.push(e.uuid)
@@ -3672,6 +3672,9 @@ animate()`
             e.userData.fileExtention = extention
             e.userData.isFileImport = true
             e.userData.fileName = fileNameWithoutExtention.replaceAll('.','_')
+            if(e.material){
+             e.material.wireframe = settings.wireframe
+            }
             chosenLayer = e
             mainScene.add(e)
           })
@@ -3683,6 +3686,9 @@ animate()`
             e.userData.fileExtention = extention
             e.userData.isFileImport = true
             e.userData.fileName = fileNameWithoutExtention.replaceAll('.','_')
+            if(e.material){
+             e.material.wireframe = settings.wireframe
+            }
             chosenLayer = e            
             mainScene.add(e)
           })
@@ -3691,7 +3697,7 @@ animate()`
           stloader.load( blobUrl,(e)=>{
             let stlMesh;
             if ( e.hasColors ) {
-              material = new THREE.MeshPhongMaterial( { opacity: e.alpha, vertexColors: true } );
+              material = new THREE.MeshPhongMaterial( { opacity: e.alpha, vertexColors: true, wireframe: settings.wireframe} );
               stlMesh = new THREE.Mesh( e, material );
             }else{
               stlMesh = new THREE.Mesh( e ) ;
@@ -4115,6 +4121,8 @@ composer.addPass( ${effect.constructor.name} )
       
       if(child.isMesh){
         if(child.geometry && child.children.length < 1){
+          console.log(child);
+          
           let positions = child.geometry.attributes.position.array
           let unique = [];
           let seen = new Set();
@@ -4128,6 +4136,7 @@ composer.addPass( ${effect.constructor.name} )
                   unique.push([x, y, z,i / 3]);
               }
           }
+          let mat = new THREE.MeshBasicMaterial({color: 'grey'})
           unique.forEach((cord)=>{              
             let buffer = new THREE.BufferGeometry()
             let vertices = new Float32Array([
@@ -4135,7 +4144,7 @@ composer.addPass( ${effect.constructor.name} )
             ])
             buffer.setAttribute('position', new THREE.BufferAttribute(vertices, 3))
             const geometry = new THREE.SphereGeometry(0.020, 8, 8);
-            let points = new THREE.Mesh( geometry,new THREE.MeshBasicMaterial({color: 'grey'}))
+            let points = new THREE.Mesh( geometry,mat)
             points.position.set( cord[0],cord[1],cord[2])
             points.userData.skip = true
             points.userData.index = cord[3]
@@ -4283,11 +4292,10 @@ composer.addPass( ${effect.constructor.name} )
                 intersect.object.geometry.attributes.position.needsUpdate = true;
             }
             // THEpoint.geometry.attributes.position.setXYZ(0,point.x ,point.y,point.z)
-            THEpoint.position.set(point.x ,point.y,point.z)
-            selectionBox.update()
-
-            // THEpoint.geometry.attributes.position.needsUpdate = true;
-    
+            if(THEpoint){
+              THEpoint.position.set(point.x ,point.y,point.z)
+            }
+            selectionBox.update()    
           }
     
         })
@@ -4317,7 +4325,9 @@ composer.addPass( ${effect.constructor.name} )
                 child.geometry.attributes.position.setXYZ(index[i],point.x ,point.y,point.z)
                 child.geometry.attributes.position.needsUpdate = true
             }
-            THEpoint.position.set(point.x ,point.y,point.z)
+            if(THEpoint){
+              THEpoint.position.set(point.x ,point.y,point.z)
+            }
             selectionBox.update()
     
           }else{
