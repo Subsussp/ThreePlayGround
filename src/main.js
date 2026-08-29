@@ -4284,6 +4284,7 @@ composer.addPass( ${effect.constructor.name} )
             }
             // THEpoint.geometry.attributes.position.setXYZ(0,point.x ,point.y,point.z)
             THEpoint.position.set(point.x ,point.y,point.z)
+            selectionBox.update()
 
             // THEpoint.geometry.attributes.position.needsUpdate = true;
     
@@ -4293,13 +4294,15 @@ composer.addPass( ${effect.constructor.name} )
         }
         else if(point){
           let cords = checkIfValidPoint(child,point);
+          console.log(cords);
+          
           if(cords){
             console.log('found a close point by');
-          instantIndex = cords[3]
-          instantCords = cords
-          let positions = child.geometry.attributes.position          
-          index == undefined && (index = cords[3])
-          controls.enabled = false
+            instantIndex = cords[3]
+            instantCords = cords
+            let positions = child.geometry.attributes.position          
+            index == undefined && (index = cords[3])
+            controls.enabled = false
             // visual feedback (points) update 
             // child.children.forEach((childpoint)=>{
             //   let pointCords = childpoint.geometry.attributes.position.array
@@ -4315,7 +4318,7 @@ composer.addPass( ${effect.constructor.name} )
                 child.geometry.attributes.position.needsUpdate = true
             }
             THEpoint.position.set(point.x ,point.y,point.z)
-            // THEpoint.geometry.attributes.position.needsUpdate = true;
+            selectionBox.update()
     
           }else{
             if(firstMouseDown){
