@@ -153,6 +153,7 @@ async function createEditor(mainscene,initialization,rawObject){
   let importSection;
   let codeSection;
   let sceneAddSection;
+  let animateSection;
   let mainRenderer;
   let mainComposer;
   let fileName;
@@ -162,6 +163,7 @@ async function createEditor(mainscene,initialization,rawObject){
   let mainScene;
   let MainRealscene;
   let mainCamera;
+  let mainCameraParam = [ 75, window.innerWidth / window.innerHeight, 0.1, 1000 ];
   let vertexNormalsHelper;
   let animationId;
   let controls;
@@ -3389,7 +3391,7 @@ const materialDefaultProperties = {
 
 
   let names = {}
-  function handleExport(child,group) {
+  function handleExport(child) {
     if(child.constructor.name && Object.hasOwn(THREE,child.constructor.name)){
         // if(child?.userData?.isFileImport && child.isGroup){
         //   handleImportedSceneExport(child)
@@ -3408,7 +3410,7 @@ const materialDefaultProperties = {
 
         
         if(child?.isMesh){
-          handleMeshExport(child,group)
+          handleMeshExport(child)
       }
   }
 
@@ -3487,6 +3489,14 @@ sceneAddSection += `scene.add(${fileNameWithoutExtention}.scene)\n`
     codeSection += '\n'
     sceneAddSection += `${group ?? 'scene'}.add(${meshVarName})\n` 
   }
+  }
+  function handleAnimate() {
+    animateSection = `function animate(){
+      requestAnimationFrame(animate)
+      controls.update();
+      ${mainComposer ? 'composer.render()' : 'renderer.render(scene,camera)'
+    }
+    animate()`
   }
   function generateName(name) {
     if(Object.hasOwn(names,name)){
@@ -3668,7 +3678,7 @@ sceneAddSection += `scene.add(${fileNameWithoutExtention}.scene)\n`
     appElement.appendChild(mainRenderer.domElement)
 
 
-    mainCamera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
+    mainCamera = new THREE.PerspectiveCamera(...mainCameraParam);
     if(rawObject){    
       if(rawObject?.effectsNames?.length ?? 0 > 0){
           mainComposer = new EffectComposer(mainRenderer)
@@ -3720,8 +3730,8 @@ sceneAddSection += `scene.add(${fileNameWithoutExtention}.scene)\n`
       Grid.checked = (window.localStorage.getItem("G")== "false" ? false : true)
       GridHelper.visible = (window.localStorage.getItem("G")== "false" ? false : true)
     }else{
-      Grid.checked = false
-      GridHelper.visible = false
+      Grid.checked = true
+      GridHelper.visible = true
     }
     MainRealscene = new THREE.Scene()
     mainScene.name = 'Scene'
@@ -3994,12 +4004,39 @@ sceneAddSection += `scene.add(${fileNameWithoutExtention}.scene)\n`
       document.getElementById('language-jsContain').hidden = false
       exportCode = ``
       importSection = ``
-      codeSection = ``
+      codeSection = `let scene = new THREE.Scene()
+let ${mainCamera.type} = new THREE.${mainCamera.type}(${[...mainCameraParam]})
+let renderer = new THREE.${mainRenderer.constructor.name}()
+renderer.setSize(window.innerWidth,window.innerHeight)
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+document.body.appendChild(renderer.domElement)
+
+`
       sceneAddSection = ``
+      animateSection = ``
       mainScene.children.forEach(handleExport)
+      handleAnimate()
       exportCode += importSection 
       exportCode += codeSection 
       exportCode += sceneAddSection 
+      if(mainComposer){
+        console.log(mainComposer);
+        let text = ``
+        mainComposer.passes.forEach((effect)=>{
+          text += `let ${effect.constructor.name} = new ${effect.constructor.name}(scene,camera)
+composer.addPass( renderPass )
+          `
+        })
+        exportCode += `let composer = new EffectComposer(renderer)
+            
+            let specialEffect = ${JSON.stringify(effects[objects[i]].create(renderer,scene,camera))}
+            effectsNames.push()
+            composer.addPass( specialEffect )
+            
+            let outputPass = new OutputPass()
+            composer.addPass( outputPass )`
+      }
+      exportCode += animateSection 
       let codeExportElement = document.getElementById('language-js')
       codeExportElement.textContent = exportCode
       Prism.highlightElement(codeExportElement);
