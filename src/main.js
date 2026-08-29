@@ -3523,7 +3523,7 @@ const materialDefaultProperties = {
         // }
         if(child.isGroup){
           let name = generateName('group')
-          codeSection += `let ${name} = new THREE.group()\n`
+          codeSection += `let ${name} = new THREE.Group()\n`
           changeIfNotDefaultTransformValues(child)
           child.children.forEach((groupChild)=>handleExport(groupChild,name))
           sceneAddSection += `scene.add(${name})\n`
@@ -3594,8 +3594,9 @@ sceneAddSection += `scene.add(${fileNameWithoutExtention}.scene)\n`
 
       if(child.geometry.type == 'BufferGeometry'){
         codeSection += `let ${geoVarName} = new THREE.${child.geometry.constructor.name}()\n`
-        codeSection += `const vertices = new Float32Array( [${[...child.geometry.attributes.position.array]}] );\n`
-        codeSection += `geometry.setAttribute( 'position', new THREE.BufferAttribute( vertices, ${child.geometry.attributes.position.itemSize} ) );;\n`
+        let vert = generateName('vertices')
+        codeSection += `const ${vert} = new Float32Array( [${[...child.geometry.attributes.position.array]}] );\n`
+        codeSection += `${geoVarName}.setAttribute( 'position', new THREE.BufferAttribute( ${vert}, ${child.geometry.attributes.position.itemSize} ) );;\n`
         
       }else{
         let geoParams = Object.values(child.geometry.parameters)
@@ -4137,6 +4138,8 @@ animate()`
       exportCode = ``
       importSection = `import * as THREE from "three";
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+
 `;
       codeSection = `\nlet scene = new THREE.Scene()
 let camera = new THREE.${mainCamera.type}(${[...mainCameraParam]})
@@ -4150,12 +4153,12 @@ let controls = new OrbitControls( camera, renderer.domElement );
 
 `
       if(mainComposer){
-        mainComposer.passes.forEach((effect)=>{
-        importSection += `import { ${effect.constructor.name} } from 'three/addons/${getAddonType(effect.constructor.name)}/${effect.constructor.name}.js';
+        text = `let composer = new EffectComposer(renderer)
 `
-        text += `let composer = new EffectComposer(renderer)
-let ${effect.constructor.name} = new ${effect.constructor.name}(scene,camera)
-composer.addPass( ${effect.constructor.name} )
+        mainComposer.passes.forEach((effect)=>{
+        importSection += `import { ${effect.constructor.name} } from 'three/addons/${getAddonType(effect.constructor.name)}/${effect.constructor.name}.js'\n`;
+        text +=`let ${effect.constructor.name.toLowerCase()} = new ${effect.constructor.name}(scene,camera)
+composer.addPass( ${effect.constructor.name.toLowerCase()} )
 
 `
         })
