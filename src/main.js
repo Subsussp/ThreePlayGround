@@ -3749,7 +3749,7 @@ sceneAddSection += `scene.add(${fileNameWithoutExtention}.scene)\n`
     TC = new TransformControls(mainCamera,mainRenderer.domElement)
     TC.setMode('translate')
     TC.enabled = true;    
-    if(rawObject.chosenLayer){
+    if(rawObject?.chosenLayer){
       chosenLayer = mainScene.getObjectByProperty('uuid', rawObject.chosenLayer)
       handleTranformControlsAndBoxHelper(chosenLayer)
     }
