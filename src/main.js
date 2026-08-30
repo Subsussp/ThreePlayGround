@@ -81,6 +81,7 @@ const fbxLoader = new FBXLoader();
 const stloader = new STLLoader();
 const objLoader = new OBJLoader();
 const plyLoader = new PLYLoader();
+const svgLoader = new SVGLoader();
 const loader = new GLTFLoader();
 const dracoLoader = new DRACOLoader();
 dracoLoader.setDecoderPath('https://www.gstatic.com/draco/v1/decoders/'); 
@@ -3533,7 +3534,9 @@ const materialDefaultProperties = {
 
         // console.log(child);
 
-        
+        if(child?.isLight){
+          handleLightExport(child)
+        }
         if(child?.isMesh){
           handleMeshExport(child)
       }
@@ -3630,6 +3633,12 @@ ${geoVarName}.setIndex(${bufferName})\n`
     changeIfNotDefaultTransformValues(child,meshVarName)
     codeSection += '\n'
     sceneAddSection += `${group ?? 'scene'}.add(${meshVarName})\n` 
+  }
+  function handleLightExport(child,group) {
+    let lightName = generateName(child.type)    
+    codeSection += `let ${lightName} = THREE.${child.type}()`
+    sceneAddSection += `${group ?? 'scene'}.add(${lightName})\n` 
+
   }
   }
   function handleAnimate() {
@@ -3762,6 +3771,32 @@ animate()`
           })
           break; 
         case 'svg':
+          svgLoader.load(blobUrl,(data)=>{
+          const paths = data.paths;
+          const group = new THREE.Group();
+          for ( let i = 0; i < paths.length; i ++ ) {
+            const path = paths[ i ];
+            const material = new THREE.MeshBasicMaterial( {
+              color: path.color,
+              side: THREE.DoubleSide,
+              depthWrite: false,
+              wireframe:settings.wireframe
+            } );
+            const shapes = SVGLoader.createShapes( path );
+            for ( let j = 0; j < shapes.length; j ++ ) {
+              const shape = shapes[ j ];
+              const geometry = new THREE.ShapeGeometry( shape );
+              const mesh = new THREE.Mesh( geometry, material );
+              group.add( mesh );
+            }
+          }
+          group.userData.fileExtention = extention
+          group.userData.isFileImport = true
+          group.userData.fileName = fileNameWithoutExtention.replaceAll('.','_')
+          chosenLayer =group 
+          mainScene.add( group );
+          });
+
           break; 
         case 'obj':
           objLoader.load(blobUrl,(e)=>{
