@@ -3595,10 +3595,24 @@ sceneAddSection += `scene.add(${fileNameWithoutExtention}.scene)\n`
 
       if(child.geometry.type == 'BufferGeometry'){
         codeSection += `let ${geoVarName} = new THREE.${child.geometry.constructor.name}()\n`
-        let vert = generateName('vertices')
-        codeSection += `const ${vert} = new Float32Array( [${[...child.geometry.attributes.position.array]}] );\n`
-        codeSection += `${geoVarName}.setAttribute( 'position', new THREE.BufferAttribute( ${vert}, ${child.geometry.attributes.position.itemSize} ) );;\n`
-        
+        for (let i = 0; i < Object.entries(child.geometry.attributes).length; i++) {
+          const attribute = Object.entries(child.geometry.attributes)[i][0];
+          const value = Object.entries(child.geometry.attributes)[i][1];
+          
+          if(value){
+            let vert = generateName(attribute + 'Vertices')
+            codeSection += `const ${vert} = new Float32Array( [${[...child.geometry.attributes[attribute].array]}] );\n`
+            codeSection += `${geoVarName}.setAttribute( '${attribute}', new THREE.BufferAttribute( ${vert}, ${child.geometry.attributes[attribute].itemSize} ) );;\n`
+
+          }
+        }
+        console.log(child.geometry);
+        if(child.geometry?.index){
+          console.log(child.geometry?.index);
+          let indexName = generateName('indexArray')
+          codeSection += `let ${indexName} = new Uint16Array([${[...child.geometry?.index.array]}])
+${geoVarName}.index.array = ${indexName}\n`            
+        }
       }else{
         let geoParams = Object.values(child.geometry.parameters)
         geoVarName = generateName((child.geometry?.userData?.name ? child.geometry.userData.name : child.geometry.name ? child.geometry.name : child.geometry.type).replaceAll('.','_'))
