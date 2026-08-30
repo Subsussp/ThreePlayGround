@@ -3610,8 +3610,10 @@ sceneAddSection += `scene.add(${fileNameWithoutExtention}.scene)\n`
         if(child.geometry?.index){
           console.log(child.geometry?.index);
           let indexName = generateName('indexArray')
+          let bufferName = generateName('bufferArray')
           codeSection += `let ${indexName} = new Uint16Array([${[...child.geometry?.index.array]}])
-${geoVarName}.index.array = ${indexName}\n`            
+let ${bufferName} =  new THREE.BufferAttribute( ${indexName}, ${child.geometry?.index.itemSize} )
+${geoVarName}.setIndex(${bufferName})\n`            
         }
       }else{
         let geoParams = Object.values(child.geometry.parameters)
