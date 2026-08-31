@@ -157,6 +157,7 @@ async function createEditor(mainscene,initialization,rawObject){
   let animateSection;
   let mainRenderer;
   let mainComposer;
+  let timeOutHandle;
   let fileName;
   let functionAfterPhotoUpload;
   let effectsNames = [];
@@ -164,7 +165,7 @@ async function createEditor(mainscene,initialization,rawObject){
   let mainScene;
   let MainRealscene;
   let mainCamera;
-  let mainCameraParam = [ 75, window.innerWidth / window.innerHeight, 0.1, 1000 ];
+  let mainCameraParam = [ 75, window.innerWidth / window.innerHeight, 0.1, 10000 ];
   let vertexNormalsHelper;
   let animationId;
   let controls;
@@ -176,6 +177,7 @@ async function createEditor(mainscene,initialization,rawObject){
   const copyButton = document.querySelector(".copy-button");
   const code = document.querySelector("#language-js");
   let codecont = document.getElementById('language-jsContain')
+  let vertexEdit = document.getElementById('vertexEditing')
   let out = false
 
   let copyTimeout;
@@ -211,42 +213,102 @@ async function createEditor(mainscene,initialization,rawObject){
 })
 codecont.addEventListener('mouseover',(e)=>out = false)
 codecont.addEventListener('mouseout',(e)=>out = true)
-  document.querySelectorAll('.export').forEach((e)=>{    
-    e.addEventListener('mouseup',async (element)=>{
-      element.stopPropagation()
-      let exportFileExtention = element.target.innerText
-      if(exportFileExtention.toLowerCase() == 'drc'){
-        const { DRACOExporter } = await import( 'three/addons/exporters/DRACOExporter.js' );
-        let exporter = new DRACOExporter()
-        console.log(chosenLayer);
-        
-        const options = {
-          decodeSpeed: 5,
-          encodeSpeed: 5,
-          encoderMethod: DRACOExporter.MESH_EDGEBREAKER_ENCODING,
-          quantization: [ 16, 8, 8, 8, 8 ],
-          exportUvs: true,
-          exportNormals: true,
-          exportColor: chosenLayer.geometry.hasAttribute( 'color' )
-      };
-        let data = await exporter.parseAsync(chosenLayer,options);
-        saveBuffer(data, 'model.drc')
-      }else if(exportFileExtention.toLowerCase() == 'gltf' || exportFileExtention.toLowerCase() == 'gltf' ){
-        const { GLTFExporter } = await import( 'three/addons/exporters/GLTFExporter.js' );
-        let exporter = new GLTFExporter();
-        const copyOfChildren = mainScene.children.filter((child) => {
-            return !(
-                child?.isTransformControls ||
-                child.name === "TransformControlsHelper" ||
-                child?.userData?.isVertexNormalsHelper
-            );
-        });
-        exporter.parse(copyOfChildren,function (result){
-          saveBuffer(exportFileExtention == 'GLTF' ? JSON.stringify(result, null, 2) : result, `scene.${element.target.innerText}`)
-        })
-      }
+document.querySelectorAll('.export').forEach((e)=>{    
+  e.addEventListener('mouseup',async (element)=>{
+    element.stopPropagation()
+    let exportFileExtention = element.target.innerText
+    if(exportFileExtention.toLowerCase() == 'drc'){
+      const { DRACOExporter } = await import( 'three/addons/exporters/DRACOExporter.js' );
+      let exporter = new DRACOExporter()
+      console.log(chosenLayer);
+      
+      const options = {
+        decodeSpeed: 5,
+        encodeSpeed: 5,
+        encoderMethod: DRACOExporter.MESH_EDGEBREAKER_ENCODING,
+        quantization: [ 16, 8, 8, 8, 8 ],
+        exportUvs: true,
+        exportNormals: true,
+        exportColor: chosenLayer.geometry.hasAttribute( 'color' )
+    };
+      let data = await exporter.parseAsync(chosenLayer,options);
+      saveBuffer(data, 'model.drc')
+    }else if(exportFileExtention.toLowerCase() == 'gltf' || exportFileExtention.toLowerCase() == 'gltf' ){
+      const { GLTFExporter } = await import( 'three/addons/exporters/GLTFExporter.js' );
+      let exporter = new GLTFExporter();
+      const copyOfChildren = mainScene.children.filter((child) => {
+          return !(
+              child?.isTransformControls ||
+              child.name === "TransformControlsHelper" ||
+              child?.userData?.isVertexNormalsHelper
+          );
+      });
+      exporter.parse(copyOfChildren,function (result){
+        saveBuffer(exportFileExtention == 'GLTF' ? JSON.stringify(result, null, 2) : result, `scene.${element.target.innerText}`)
+      })
+    }
 
-    })
+  })
+})
+  vertexEdit.addEventListener('click',(e)=>{
+    if(!vertexEdit.classList.contains('beforeChecked')){
+
+      [...mainScene.children].forEach((child)=>{
+        if(child.isMesh){
+          let checkForCustomPoints = child.children.find((child)=>child.userData.vertexVisual)
+          
+          if(child.geometry && !checkForCustomPoints ){          
+            let positions = child.geometry.attributes.position.array
+            let unique = [];
+            let index = [];
+            let seen = new Map();
+            for (let i = 0; i < positions.length; i += 3) {
+                let x = positions[i];
+                let y = positions[i + 1];
+                let z = positions[i + 2];
+                let vertexIndex = i / 3;
+                let key = `${x},${y},${z}`;
+                if (!seen.has(key)) {
+                    seen.set(key, unique.length);
+                    unique.push([x, y, z,]);
+                    index.push([vertexIndex]);
+                }else{
+                  let uniqueIndex = seen.get(key);
+                  index[uniqueIndex].push(vertexIndex);
+                }
+            }
+            let mat = new THREE.MeshBasicMaterial({color: 'grey'})
+            unique.forEach((cord,i)=>{              
+              let buffer = new THREE.BufferGeometry()
+              let vertices = new Float32Array([
+                cord[0],cord[1],cord[2]
+              ])
+              buffer.setAttribute('position', new THREE.BufferAttribute(vertices, 3))
+              const geometry = new THREE.SphereGeometry(0.020, 8, 8);
+              let points = new THREE.Mesh( geometry,mat)
+              points.position.set( cord[0],cord[1],cord[2])
+              points.userData.skip = true              
+              points.userData.index = index[i][0]
+              points.userData.indexArray = index[i]
+              points.userData.vertexVisual = true
+              child.add(points)
+            })                    
+          }
+            
+        }
+      })
+    }else{
+      [...mainScene.children].forEach((child)=>{
+        if(child.isMesh){
+          [...child.children].forEach((pointChild)=>{
+            if(pointChild.userData?.vertexVisual)pointChild.removeFromParent()
+            
+            })
+        }
+      })
+    }
+    vertexEdit.classList.toggle('beforeChecked');
+
   })
   // delete the loaderMap after you finish
   let loaderMap = {
@@ -3403,6 +3465,7 @@ const materialDefaultProperties = {
   }
   function saveSceneState(){    
     let pasr = mainScene.toJSON()
+    
     pasr.cameraPosition = mainCamera.position.toArray(); 
     if(chosenLayer)pasr.chosenLayer = chosenLayer.uuid
     else{
@@ -3964,6 +4027,15 @@ animate()`
     });
     let positionMapArr = ['x','y','z']
     TC.addEventListener('change',(e)=>{
+      if(chosenLayer?.userData?.vertexVisual){
+        for (let i = 0; i < chosenLayer.userData.indexArray.length; i++) {      
+            chosenLayer.parent.geometry.attributes.position.setXYZ(chosenLayer.userData.indexArray[i],chosenLayer.position.x ,chosenLayer.position.y,chosenLayer.position.z)
+            chosenLayer.parent.geometry.attributes.position.needsUpdate = true;
+            chosenLayer.parent.geometry.computeVertexNormals()
+            chosenLayer.parent.geometry.attributes.normal.needsUpdate = true;
+          }
+        autoSaveUnlessChanged()
+      }
       if(chosenLayer?.userData?.vertexNormalsHelper){
         let ob = mainScene.getObjectByProperty('uuid', chosenLayer.userData.vertexNormalsHelper);
         if(ob?.update)ob.update()
@@ -4239,41 +4311,6 @@ composer.addPass( ${effect.constructor.name.toLowerCase()} )
 
     [...mainScene.children].forEach((child)=>{
       
-      if(child.isMesh){
-        let checkForCustomPoints = child.children.find((child)=>child.userData.vertexVisual)
-        
-        if(child.geometry && !checkForCustomPoints ){          
-          let positions = child.geometry.attributes.position.array
-          let unique = [];
-          let seen = new Set();
-          for (let i = 0; i < positions.length; i += 3) {
-              let x = positions[i];
-              let y = positions[i + 1];
-              let z = positions[i + 2];
-              let key = `${x},${y},${z}`;
-              if (!seen.has(key)) {
-                  seen.add(key);
-                  unique.push([x, y, z,i / 3]);
-              }
-          }
-          let mat = new THREE.MeshBasicMaterial({color: 'grey'})
-          unique.forEach((cord)=>{              
-            let buffer = new THREE.BufferGeometry()
-            let vertices = new Float32Array([
-              cord[0],cord[1],cord[2]
-            ])
-            buffer.setAttribute('position', new THREE.BufferAttribute(vertices, 3))
-            const geometry = new THREE.SphereGeometry(0.020, 8, 8);
-            let points = new THREE.Mesh( geometry,mat)
-            points.position.set( cord[0],cord[1],cord[2])
-            points.userData.skip = true
-            points.userData.index = cord[3]
-            points.userData.vertexVisual = true
-            child.add(points)
-          })                    
-        }
-          
-      }
         if(child.userData.isLightHelper){
           child.removeFromParent()
           return null
@@ -4399,14 +4436,6 @@ composer.addPass( ${effect.constructor.name.toLowerCase()} )
             }
               let THEpoint = intersect.object.children.find((child)=>index.includes(child.userData.index))        
                 
-            // visual feedback (points) update 
-            // intersect.object.children.forEach((childpoint)=>{
-            //   let pointCords = childpoint.geometry.attributes.position.array
-            //   if(pointCords[0] == cords[0] && pointCords[1] == cords[1] && pointCords[2] == cords[2]){
-            //       childpoint.geometry.attributes.position.setXYZ(0,point.x ,point.y,point.z)
-            //       childpoint.geometry.attributes.position.needsUpdate = true
-            //     }
-            //   })
             for (let i = 0; i < index.length; i++) {      
                 intersect.object.geometry.attributes.position.setXYZ(index[i],point.x ,point.y,point.z)
                 intersect.object.geometry.attributes.position.needsUpdate = true;
@@ -4431,14 +4460,6 @@ composer.addPass( ${effect.constructor.name.toLowerCase()} )
             let positions = child.geometry.attributes.position          
             index == undefined && (index = cords[3])
             controls.enabled = false
-            // visual feedback (points) update 
-            // child.children.forEach((childpoint)=>{
-            //   let pointCords = childpoint.geometry.attributes.position.array
-            //   if(pointCords[0] == cords[0] && pointCords[1] == cords[1] && pointCords[2] == cords[2]){
-            //       childpoint.geometry.attributes.position.setXYZ(0,point.x ,point.y,point.z)
-            //       childpoint.geometry.attributes.position.needsUpdate = true
-            //     }
-            //   })
             let THEpoint = child.children.find((child)=>index.includes(child.userData.index))        
 
             for (let i = 0; i < index.length; i++) {              
@@ -4554,6 +4575,17 @@ composer.addPass( ${effect.constructor.name.toLowerCase()} )
           child.removeFromParent()
         }
       })
+  }
+  function autoSaveUnlessChanged() {
+    if(timeOutHandle){
+      clearTimeout(timeOutHandle)
+    }
+    timeOutHandle = setTimeout(() => {
+      saveSceneState()
+      timeOutHandle = null;
+      console.log('saved state to indexedDB.');
+      
+    }, 3000);
   }
   }
 

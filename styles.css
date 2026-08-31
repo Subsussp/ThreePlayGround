@@ -92,6 +92,15 @@ path {
     background-color: #a7afac;
     z-index: 999999;
 }
+#vertexEditing::before{
+    content: ' ';
+    font-size: 12px;
+    display: inline-block;
+    width: 16px;
+}
+#vertexEditing.beforeChecked::before{
+    content: '✔'!important;
+}
 
 .checkbox {
     appearance: none;
