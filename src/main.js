@@ -18,6 +18,7 @@ import { STLExporter } from 'three/addons/exporters/STLExporter.js';
 import { PLYExporter } from 'three/addons/exporters/PLYExporter.js';
 import { OBJExporter } from 'three/addons/exporters/OBJExporter.js';
 import { ColladaLoader } from 'three/addons/loaders/ColladaLoader.js';
+import { USDLoader } from 'three/addons/loaders/USDLoader.js';
 
 import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
@@ -86,6 +87,7 @@ const svgLoader = new SVGLoader();
 const loader = new GLTFLoader();
 const dracoLoader = new DRACOLoader();
 const colladaLoader = new ColladaLoader();
+const usdLoader = new USDLoader();
 
 dracoLoader.setDecoderPath('https://www.gstatic.com/draco/v1/decoders/'); 
 loader.setDRACOLoader(dracoLoader);
@@ -2357,8 +2359,10 @@ const materialDefaultProperties = {
           if(mode == 'customPreset'){
             obj = customPresets[objects[i]].mesh.clone()
             chosenLayer = obj
-            obj.position.set(0, -1, 0);
-            obj.scale.set(100, 100, 1)
+            if(objects[i] == 'sprite'){
+              obj.position.set(0, -1, 0);
+              obj.scale.set(100, 100, 1)
+            }
           }
             mainScene.add(obj)
             settings.openPanelOnChange && mainInit()
@@ -3926,6 +3930,14 @@ animate()`
             chosenLayer = result.scene
             mainScene.add( result.scene );
           })
+        case 'usdz':
+          usdLoader.load(blobUrl,(result)=>{
+            result.userData.fileExtention = extention
+            result.userData.isFileImport = true
+            result.userData.fileName = fileNameWithoutExtention.replaceAll('.','_')
+            chosenLayer = result
+            mainScene.add(result)
+          })
         default:
           break;
       }
@@ -4239,7 +4251,7 @@ animate()`
         if(chosenLayer && chosenLayer.uuid !== mainScene.uuid && chosenLayer.uuid !== mainCamera.uuid ){
           TC.detach()
           hideTransformAndSelectionBox()
-          layerContainer.querySelector(`[data-uuid="${chosenLayer.uuid}"]`).remove()
+          layerContainer.querySelector(`[data-uuid="${chosenLayer.uuid}"]`) && layerContainer.querySelector(`[data-uuid="${chosenLayer.uuid}"]`).remove()
           if(chosenLayer?.isLight){
             chosenLayer.userData?.object && (mainScene.getObjectByProperty('uuid', chosenLayer.userData.object)).removeFromParent()
             if(chosenLayer.target){
