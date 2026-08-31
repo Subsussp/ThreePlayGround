@@ -157,6 +157,9 @@ async function createEditor(mainscene,initialization,rawObject){
   let animateSection;
   let mainRenderer;
   let mainComposer;
+  let vertexEditing = window.localStorage.getItem('vertexEditing') != undefined ? window.localStorage.getItem('vertexEditing') == 'true' : false;
+  console.log(vertexEditing);
+  
   let timeOutHandle;
   let fileName;
   let functionAfterPhotoUpload;
@@ -170,14 +173,14 @@ async function createEditor(mainscene,initialization,rawObject){
   let animationId;
   let controls;
   let TC;
-  let names = {}
+  let names = {};
   let selectionBox;
-  let renderer = new THREE.WebGLRenderer({antialias:true})
+  let renderer = new THREE.WebGLRenderer({antialias:true});
   const spriteTexture =new THREE.TextureLoader().load("textures/sprite.jpg");
   const copyButton = document.querySelector(".copy-button");
   const code = document.querySelector("#language-js");
-  let codecont = document.getElementById('language-jsContain')
-  let vertexEdit = document.getElementById('vertexEditing')
+  let codecont = document.getElementById('language-jsContain');
+  let vertexEdit = document.getElementById('vertexEditing');
   let out = false
 
   let copyTimeout;
@@ -251,64 +254,9 @@ document.querySelectorAll('.export').forEach((e)=>{
   })
 })
   vertexEdit.addEventListener('click',(e)=>{
-    if(!vertexEdit.classList.contains('beforeChecked')){
-
-      [...mainScene.children].forEach((child)=>{
-        if(child.isMesh){
-          let checkForCustomPoints = child.children.find((child)=>child.userData.vertexVisual)
-          
-          if(child.geometry && !checkForCustomPoints ){          
-            let positions = child.geometry.attributes.position.array
-            let unique = [];
-            let index = [];
-            let seen = new Map();
-            for (let i = 0; i < positions.length; i += 3) {
-                let x = positions[i];
-                let y = positions[i + 1];
-                let z = positions[i + 2];
-                let vertexIndex = i / 3;
-                let key = `${x},${y},${z}`;
-                if (!seen.has(key)) {
-                    seen.set(key, unique.length);
-                    unique.push([x, y, z,]);
-                    index.push([vertexIndex]);
-                }else{
-                  let uniqueIndex = seen.get(key);
-                  index[uniqueIndex].push(vertexIndex);
-                }
-            }
-            let mat = new THREE.MeshBasicMaterial({color: 'grey'})
-            unique.forEach((cord,i)=>{              
-              let buffer = new THREE.BufferGeometry()
-              let vertices = new Float32Array([
-                cord[0],cord[1],cord[2]
-              ])
-              buffer.setAttribute('position', new THREE.BufferAttribute(vertices, 3))
-              const geometry = new THREE.SphereGeometry(0.020, 8, 8);
-              let points = new THREE.Mesh( geometry,mat)
-              points.position.set( cord[0],cord[1],cord[2])
-              points.userData.skip = true              
-              points.userData.index = index[i][0]
-              points.userData.indexArray = index[i]
-              points.userData.vertexVisual = true
-              child.add(points)
-            })                    
-          }
-            
-        }
-      })
-    }else{
-      [...mainScene.children].forEach((child)=>{
-        if(child.isMesh){
-          [...child.children].forEach((pointChild)=>{
-            if(pointChild.userData?.vertexVisual)pointChild.removeFromParent()
-            
-            })
-        }
-      })
-    }
-    vertexEdit.classList.toggle('beforeChecked');
-
+    vertexEditing = !vertexEdit.classList.contains('beforeChecked')
+    addOrRemoveVertices(true)
+    window.localStorage.setItem('vertexEditing',vertexEditing) 
   })
   // delete the loaderMap after you finish
   let loaderMap = {
@@ -3563,6 +3511,67 @@ const materialDefaultProperties = {
     selectionBox.update()
     TC.update()  
   }
+  function addOrRemoveVertices(toggle) {
+    if(vertexEditing){
+      [...mainScene.children].forEach((child)=>{
+        if(child.isMesh){
+          let checkForCustomPoints = child.children.find((child)=>child.userData.vertexVisual)
+          
+          if(child.geometry && !checkForCustomPoints ){          
+            let positions = child.geometry.attributes.position.array
+            let unique = [];
+            let index = [];
+            let seen = new Map();
+            for (let i = 0; i < positions.length; i += 3) {
+                let x = positions[i];
+                let y = positions[i + 1];
+                let z = positions[i + 2];
+                let vertexIndex = i / 3;
+                let key = `${x},${y},${z}`;
+                if (!seen.has(key)) {
+                    seen.set(key, unique.length);
+                    unique.push([x, y, z,]);
+                    index.push([vertexIndex]);
+                }else{
+                  let uniqueIndex = seen.get(key);
+                  index[uniqueIndex].push(vertexIndex);
+                }
+            }
+            let mat = new THREE.MeshBasicMaterial({color: 'grey'})
+            unique.forEach((cord,i)=>{              
+              let buffer = new THREE.BufferGeometry()
+              let vertices = new Float32Array([
+                cord[0],cord[1],cord[2]
+              ])
+              buffer.setAttribute('position', new THREE.BufferAttribute(vertices, 3))
+              const geometry = new THREE.SphereGeometry(0.020, 8, 8);
+              let points = new THREE.Mesh( geometry,mat)
+              points.position.set( cord[0],cord[1],cord[2])
+              points.userData.skip = true              
+              points.userData.index = index[i][0]
+              points.userData.indexArray = index[i]
+              points.userData.vertexVisual = true
+              child.add(points)
+            })                    
+          }
+            
+        }
+      })
+    }else{
+      let toRemove = []
+      mainScene.traverse((child)=>{
+        if(child.userData?.vertexVisual)toRemove.push(child);
+      })
+      toRemove.forEach((child)=>{
+         child.removeFromParent()
+      })
+    }
+    console.log(vertexEditing);
+    console.log(toggle && 'yoyoyo');
+    
+    toggle && vertexEdit.classList.toggle('beforeChecked');
+
+  }
 
 
   function handleExport(child) {
@@ -3895,7 +3904,6 @@ animate()`
   }
 
 
-  console.log(mainscene);
   
   initializeCanvas(mainscene)
   async function initializeCanvas(mainscene){
@@ -3985,6 +3993,7 @@ animate()`
       }
     }
     animate()
+    addOrRemoveVertices()
 
     selectionBox = new THREE.BoxHelper();
     selectionBox.visible = false;
@@ -4390,7 +4399,7 @@ composer.addPass( ${effect.constructor.name.toLowerCase()} )
       rayCast.setFromCamera(new THREE.Vector2(x,y),mainCamera)
     
     mainScene.children.forEach((child)=>{
-      if(child.type === "Mesh"){
+      if(child.type === "Mesh" && vertexEditing){
         let point;
         let intersectObjects = rayCast.intersectObject(child,false)
         if(mouseIsDown){
@@ -4439,6 +4448,7 @@ composer.addPass( ${effect.constructor.name.toLowerCase()} )
         }
         else if(point){
           let cords = checkIfValidPoint(child,point);
+          // debug here 
           console.log(cords);
           
           if(cords){
@@ -4575,9 +4585,7 @@ composer.addPass( ${effect.constructor.name.toLowerCase()} )
       
     }, 3000);
   }
-  function saveSceneState(){    
-    console.log(mainScene);
-    
+  function saveSceneState(){        
     let pasr = mainScene.toJSON()
 
     pasr.cameraPosition = mainCamera.position.toArray(); 
