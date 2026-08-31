@@ -10,8 +10,11 @@ a web-based 3D editor built from scratch on top of [**Three.js**
 - a Live viewport where you can control any object using on-screen controls
 - Export Three js Code 
 - Custom Presets (Unfinished)
-- 3D models import 
+- 3D models import support (.glb / .gltf / .stl / .ply / .svg / .dae / .obj / .usdz / .fbx)
 - Layers control
+- You can export scenes as glb/gltf/obj/stl/svg/ply/fbx/drc
+- Vertecies Editing 
+- auto save (working for simple stuff)
 
 # How to use it 
 You can simply visit the website :) 

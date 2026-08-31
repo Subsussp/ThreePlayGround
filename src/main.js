@@ -2601,7 +2601,7 @@ const materialDefaultProperties = {
       label.innerHTML ='Object'
       meshComponentContainer.appendChild(label)
       label.addEventListener("click",selectLabel)
-      console.log(chosenLayer)
+      // console.log(chosenLayer)
       createObjectPanel(chosenLayer,panelContainer)
       if(chosenLayer?.geometry) {
         let label = document.createElement('div')
@@ -2617,7 +2617,6 @@ const materialDefaultProperties = {
         label.classList.add('vertwr')
         label.innerHTML ='Material'
         label.addEventListener("click",selectLabel)
-        console.log(chosenLayer);
         createMaterialPanel(chosenLayer,panelContainer)
         meshComponentContainer.appendChild(label)
       }
@@ -3690,9 +3689,7 @@ sceneAddSection += `scene.add(${fileNameWithoutExtention}.scene)\n`
 
           }
         }
-        console.log(child.geometry);
         if(child.geometry?.index){
-          console.log(child.geometry?.index);
           let indexName = generateName('indexArray')
           let bufferName = generateName('bufferArray')
           codeSection += `let ${indexName} = new Uint16Array([${[...child.geometry?.index.array]}])
@@ -4067,7 +4064,6 @@ animate()`
             chosenLayer.parent.geometry.computeVertexNormals()
             chosenLayer.parent.geometry.attributes.normal.needsUpdate = true;
           }
-          console.log(mainScene);
 
         autoSaveUnlessChanged()
       }
@@ -4492,7 +4488,7 @@ composer.addPass( ${effect.constructor.name.toLowerCase()} )
           // console.log(cords);
           
           if(cords){
-            console.log('found a close point by');
+            // console.log('found a close point by');
             instantIndex = cords[3]
             instantCords = cords
             let positions = child.geometry.attributes.position          
