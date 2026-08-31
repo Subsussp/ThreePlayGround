@@ -1927,7 +1927,7 @@ const materialDefaultProperties = {
   };
   const customPresets = {
     sprite: {
-     mesh:new THREE.Sprite( spmaterial ),
+     mesh: new THREE.Sprite( spmaterial ),
     }
   }
   let cameras = {
@@ -2355,9 +2355,10 @@ const materialDefaultProperties = {
             return
           }
           if(mode == 'customPreset'){
-            console.log(objects[i].mesh);
-            
-            mainScene.add(objects[i].mesh)
+            console.log(customPresets[objects[i]].mesh);
+            obj = customPresets[objects[i]].mesh
+            obj.position.set(100, -1, 0);
+            obj.scale.set(100, 100, 1)
           }
             mainScene.add(obj)
             settings.openPanelOnChange && mainInit()
@@ -3093,8 +3094,8 @@ const materialDefaultProperties = {
     let attributes = createKeyElement('attributes (points)')
     let divForAttributes = document.createElement('div')
     let spanForDisplay = createInfoDisplaySpan('index',object.geometry?.index?.count ?? 'Non Indexed')
-    let spanForDisplay1 = createInfoDisplaySpan('position',object.geometry.attributes.position.count)
-    let spanForDisplay2 = createInfoDisplaySpan('normal',object.geometry.attributes.normal.count)
+    let spanForDisplay1 = createInfoDisplaySpan('position',object.geometry?.attributes?.position?.count ?? 0)
+    let spanForDisplay2 = createInfoDisplaySpan('normal',object.geometry?.attributes?.normal?.count?? 0)
     let spanForDisplay3 = createInfoDisplaySpan('uv',object.geometry?.attributes?.uv?.count ?? 0)
     
     divForAttributes.style.display = 'flex'
