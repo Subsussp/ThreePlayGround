@@ -170,7 +170,7 @@ async function createEditor(mainscene,initialization,rawObject){
   let animationId;
   let controls;
   let TC;
-  
+  let names = {}
   let selectionBox;
   let renderer = new THREE.WebGLRenderer({antialias:true})
   const spriteTexture =new THREE.TextureLoader().load("textures/sprite.jpg");
@@ -3463,20 +3463,6 @@ const materialDefaultProperties = {
     window.localStorage.setItem('setting',JSON.stringify(settings))
     saveSceneState()
   }
-  function saveSceneState(){    
-    let pasr = mainScene.toJSON()
-    
-    pasr.cameraPosition = mainCamera.position.toArray(); 
-    if(chosenLayer)pasr.chosenLayer = chosenLayer.uuid
-    else{
-      pasr.chosenLayer = undefined
-    }
-    if(effectsNames?.length ?? 0 > 0)pasr.effectsNames = effectsNames;
-    const tx = db.transaction("states", "readwrite");
-    const store = tx.objectStore("states");     
-    const putRequest = store.put(pasr,0);
-    window.scene = mainScene
-  }
   function SelectLayerVisual(){
     let htmlLayer = layerContainer.querySelector(`[data-uuid="${chosenLayer.uuid}"]`)
     htmlLayer && handleActivation(htmlLayer)
@@ -3579,7 +3565,6 @@ const materialDefaultProperties = {
   }
 
 
-  let names = {}
   function handleExport(child) {
     if(child.constructor.name && Object.hasOwn(THREE,child.constructor.name)){
         // if(child?.userData?.isFileImport && child.isGroup){
@@ -3910,7 +3895,8 @@ animate()`
   }
 
 
-
+  console.log(mainscene);
+  
   initializeCanvas(mainscene)
   async function initializeCanvas(mainscene){
     mainScene = mainscene;
@@ -4034,6 +4020,8 @@ animate()`
             chosenLayer.parent.geometry.computeVertexNormals()
             chosenLayer.parent.geometry.attributes.normal.needsUpdate = true;
           }
+          console.log(mainScene);
+
         autoSaveUnlessChanged()
       }
       if(chosenLayer?.userData?.vertexNormalsHelper){
@@ -4587,6 +4575,21 @@ composer.addPass( ${effect.constructor.name.toLowerCase()} )
       
     }, 3000);
   }
+  function saveSceneState(){    
+    console.log(mainScene);
+    
+    let pasr = mainScene.toJSON()
+
+    pasr.cameraPosition = mainCamera.position.toArray(); 
+    if(chosenLayer)pasr.chosenLayer = chosenLayer.uuid
+    else{
+      pasr.chosenLayer = undefined
+    }
+    if(effectsNames?.length ?? 0 > 0)pasr.effectsNames = effectsNames;
+    const tx = db.transaction("states", "readwrite");
+    const store = tx.objectStore("states");     
+    const putRequest = store.put(pasr,0);
+}
   }
 
 function saveBuffer(data,downloadFileName){
