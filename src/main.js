@@ -3598,8 +3598,6 @@ const materialDefaultProperties = {
     }
 
   }
-
-
   function handleExport(child) {
     if(child.constructor.name && Object.hasOwn(THREE,child.constructor.name)){
         // if(child?.userData?.isFileImport && child.isGroup){
@@ -3928,16 +3926,14 @@ animate()`
             result.scene.userData.isFileImport = true
             result.scene.userData.fileName = fileNameWithoutExtention.replaceAll('.','_')
             chosenLayer = result.scene
-            mainScene.add( result.scene );
-          })
+            mainScene.add( result.scene );})
         case 'usdz':
           usdLoader.load(blobUrl,(result)=>{
             result.userData.fileExtention = extention
             result.userData.isFileImport = true
             result.userData.fileName = fileNameWithoutExtention.replaceAll('.','_')
             chosenLayer = result
-            mainScene.add(result)
-          })
+            mainScene.add(result)})
         default:
           break;
       }

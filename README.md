@@ -52,3 +52,33 @@ So when I try to create a new three js project I get annoyed by how much work I 
 </p>
 
 
+## Installation
+
+Clone the repository:
+
+```bash
+git clone https://github.com/Subsussp/ThreePlayGround
+cd ThreePlayGround
+```
+
+Install the dependencies:
+
+```bash 
+npm install
+```
+
+## Run the App
+
+Start Vite development server:
+
+```bash
+npm run dev
+```
+
+Open the url in your browser and voila 
+
+To create the build files:
+
+```bash
+npm run build
+```
