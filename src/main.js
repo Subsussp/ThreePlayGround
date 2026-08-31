@@ -3512,7 +3512,10 @@ const materialDefaultProperties = {
     TC.update()  
   }
   function addOrRemoveVertices(toggle) {
+
     if(vertexEditing){
+      vertexEdit.classList.add('beforeChecked');
+
       [...mainScene.children].forEach((child)=>{
         if(child.isMesh){
           let checkForCustomPoints = child.children.find((child)=>child.userData.vertexVisual)
@@ -3558,6 +3561,7 @@ const materialDefaultProperties = {
         }
       })
     }else{
+      vertexEdit.classList.remove('beforeChecked');
       let toRemove = []
       mainScene.traverse((child)=>{
         if(child.userData?.vertexVisual)toRemove.push(child);
@@ -3566,10 +3570,6 @@ const materialDefaultProperties = {
          child.removeFromParent()
       })
     }
-    console.log(vertexEditing);
-    console.log(toggle && 'yoyoyo');
-    
-    toggle && vertexEdit.classList.toggle('beforeChecked');
 
   }
 
