@@ -157,9 +157,7 @@ async function createEditor(mainscene,initialization,rawObject){
   let animateSection;
   let mainRenderer;
   let mainComposer;
-  let vertexEditing = window.localStorage.getItem('vertexEditing') != undefined ? window.localStorage.getItem('vertexEditing') == 'true' : false;
-  console.log(vertexEditing);
-  
+  let vertexEditing = window.localStorage.getItem('vertexEditing') != undefined ? window.localStorage.getItem('vertexEditing') == 'true' : false;  
   let timeOutHandle;
   let fileName;
   let functionAfterPhotoUpload;
@@ -223,7 +221,6 @@ document.querySelectorAll('.export').forEach((e)=>{
     if(exportFileExtention.toLowerCase() == 'drc'){
       const { DRACOExporter } = await import( 'three/addons/exporters/DRACOExporter.js' );
       let exporter = new DRACOExporter()
-      console.log(chosenLayer);
       
       const options = {
         decodeSpeed: 5,
@@ -3511,8 +3508,7 @@ const materialDefaultProperties = {
     selectionBox.update()
     TC.update()  
   }
-  function addOrRemoveVertices(toggle) {
-
+  function addOrRemoveVertices() {
     if(vertexEditing){
       vertexEdit.classList.add('beforeChecked');
 
@@ -3521,6 +3517,7 @@ const materialDefaultProperties = {
           let checkForCustomPoints = child.children.find((child)=>child.userData.vertexVisual)
           
           if(child.geometry && !checkForCustomPoints ){          
+            if(child.geometry.type !== 'BufferGeometry')child.geometry = child.geometry.toNonIndexed()
             let positions = child.geometry.attributes.position.array
             let unique = [];
             let index = [];
@@ -4399,7 +4396,7 @@ composer.addPass( ${effect.constructor.name.toLowerCase()} )
       rayCast.setFromCamera(new THREE.Vector2(x,y),mainCamera)
     
     mainScene.children.forEach((child)=>{
-      if(child.type === "Mesh" && vertexEditing){
+      if(child.type === "Mesh" && vertexEditing){        
         let point;
         let intersectObjects = rayCast.intersectObject(child,false)
         if(mouseIsDown){
@@ -4414,6 +4411,7 @@ composer.addPass( ${effect.constructor.name.toLowerCase()} )
             
         }
         if(intersectObjects.length > 0){
+          
           intersectObjects.forEach((intersect)=>{
           let cords = checkIfValidPoint(intersect.object,intersect.point);
           instantIndex = cords[3]
@@ -4449,7 +4447,7 @@ composer.addPass( ${effect.constructor.name.toLowerCase()} )
         else if(point){
           let cords = checkIfValidPoint(child,point);
           // debug here 
-          console.log(cords);
+          // console.log(cords);
           
           if(cords){
             console.log('found a close point by');
