@@ -17,6 +17,7 @@ import { GLTFExporter } from 'three/addons/exporters/GLTFExporter.js';
 import { STLExporter } from 'three/addons/exporters/STLExporter.js';
 import { PLYExporter } from 'three/addons/exporters/PLYExporter.js';
 import { OBJExporter } from 'three/addons/exporters/OBJExporter.js';
+import { ColladaLoader } from 'three/addons/loaders/ColladaLoader.js';
 
 import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
@@ -84,6 +85,8 @@ const plyLoader = new PLYLoader();
 const svgLoader = new SVGLoader();
 const loader = new GLTFLoader();
 const dracoLoader = new DRACOLoader();
+const colladaLoader = new ColladaLoader();
+
 dracoLoader.setDecoderPath('https://www.gstatic.com/draco/v1/decoders/'); 
 loader.setDRACOLoader(dracoLoader);
 window.addEventListener('DOMContentLoaded', () => {
@@ -3893,6 +3896,14 @@ animate()`
             mainScene.add(plyMesh);
           })
           break; 
+        case 'dae':
+          colladaLoader.load(blobUrl,(result)=>{
+            result.scene.userData.fileExtention = extention
+            result.scene.userData.isFileImport = true
+            result.scene.userData.fileName = fileNameWithoutExtention.replaceAll('.','_')
+            chosenLayer = result.scene
+            mainScene.add( result.scene );
+          })
         default:
           break;
       }
