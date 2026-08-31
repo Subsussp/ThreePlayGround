@@ -279,7 +279,7 @@ document.querySelectorAll('.export').forEach((e)=>{
   }
 
   // Set the material to a wireframe standard as a default for the geometries
-  const spmaterial = new THREE.SpriteMaterial( { map: spriteTexture } );
+  const spmaterial = new THREE.SpriteMaterial( { map: spriteTexture.clone() } );
 
   let geometries = {
     BoxGeometry:{
@@ -1927,7 +1927,7 @@ const materialDefaultProperties = {
   };
   const customPresets = {
     sprite: {
-     mesh: new THREE.Sprite( spmaterial ),
+     mesh: new THREE.Sprite( spmaterial.clone() ),
     }
   }
   let cameras = {
@@ -2355,9 +2355,9 @@ const materialDefaultProperties = {
             return
           }
           if(mode == 'customPreset'){
-            console.log(customPresets[objects[i]].mesh);
-            obj = customPresets[objects[i]].mesh
-            obj.position.set(100, -1, 0);
+            obj = customPresets[objects[i]].mesh.clone()
+            chosenLayer = obj
+            obj.position.set(0, -1, 0);
             obj.scale.set(100, 100, 1)
           }
             mainScene.add(obj)
@@ -2480,7 +2480,7 @@ const materialDefaultProperties = {
         }   
         if(mode == "customPreset"){
         camera.position.set(100, .3,180);
-          mesh = customPresets[prototypes[i].dataset.TE].mesh
+          mesh = customPresets[prototypes[i].dataset.TE].mesh.clone()
           mesh.position.set(100, -1, 0);
           mesh.scale.set(100, 100, 1)
         }
