@@ -279,6 +279,7 @@ document.querySelectorAll('.export').forEach((e)=>{
   }
 
   // Set the material to a wireframe standard as a default for the geometries
+  const spmaterial = new THREE.SpriteMaterial( { map: spriteTexture } );
 
   let geometries = {
     BoxGeometry:{
@@ -1924,7 +1925,11 @@ const materialDefaultProperties = {
 
 
   };
-
+  const customPresets = {
+    sprite: {
+     mesh:new THREE.Sprite( spmaterial ),
+    }
+  }
   let cameras = {
     OrthographicCamera:{
 
@@ -2349,6 +2354,11 @@ const materialDefaultProperties = {
             saveSceneState()
             return
           }
+          if(mode == 'customPreset'){
+            console.log(objects[i].mesh);
+            
+            mainScene.add(objects[i].mesh)
+          }
             mainScene.add(obj)
             settings.openPanelOnChange && mainInit()
           }
@@ -2467,6 +2477,12 @@ const materialDefaultProperties = {
           let outputPass = new OutputPass()
           effectComposer.addPass( outputPass )
         }   
+        if(mode == "customPreset"){
+        camera.position.set(100, .3,180);
+          mesh = customPresets[prototypes[i].dataset.TE].mesh
+          mesh.position.set(100, -1, 0);
+          mesh.scale.set(100, 100, 1)
+        }
         scene.add(mesh);
         scene.background = new THREE.Color('black')
         previews.push({
@@ -2692,6 +2708,11 @@ const materialDefaultProperties = {
     }
   }
   function customPresetsInit(){
+    appendOptionObjects(Object.keys(customPresets),'customPreset')
+    if(settings.preview_3D){
+      optionDemo("customPreset")
+    }
+
   }
   function settingInit(){
     let jsonDiv = document.createElement('div')
@@ -4146,7 +4167,7 @@ animate()`
           if(b.target.dataset.type == "specialEffects"){
             specialEffectsInit()
           }
-          if(b.target.dataset.type == "customPresets"){
+          if(b.target.dataset.type == "customPreset"){
             customPresetsInit()
           }
           if(b.target.dataset.type == "setting"){
@@ -4183,6 +4204,7 @@ animate()`
           }
           hideTransformAndSelectionBox()
           handleTranformControlsAndBoxHelper(chosenLayer)
+          objectContainer.classList.remove('grid-layout')
           mainInit()
 
           saveSceneState()
