@@ -7,7 +7,7 @@
   </link>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>mms</title>
-  <script type="module" crossorigin src="/ThreePlayGround/assets/index-DcOpKbNE.js"></script>
+  <script type="module" crossorigin src="/ThreePlayGround/assets/index-BtXu_C3L.js"></script>
   <link rel="stylesheet" crossorigin href="/ThreePlayGround/assets/index-CVDG4Bjw.css">
 </head>
 
@@ -17,7 +17,12 @@
     <div class="menu-tab">
     <div class="menu-title">File</div>
       <div class="menu-options">    
-        <div id="new" class="menu-option">New</div>
+        <div  class="menu-option submenu">New
+        <div class="menu-options">    
+           <div id="new" class="menu-option">Empty</div>
+           <div id="new" class="menu-option">Default Scene</div>
+</div>
+         </div>
     <div class="menu-option submenu">Export
    <div class="menu-options">    
       <div id="export-code" class="menu-option">Code</div>
@@ -233,8 +238,8 @@
   <script src="https://cdn.jsdelivr.net/npm/prismjs/prism.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/prismjs/components/prism-javascript.min.js"></script>
   <script src="https://cdn.jsdelivr.net/gh/google/draco@1.5.7/javascript/draco_encoder.js"></script>
-  <input id="upload" hidden type="file"
-    accept=".glb, .gltf, .fbx, .obj, .stl, .ply, .dae, .3ds, .3mf, .amf, .lwo, .md2, .kmz, .ifc, .vox, .vtk, .vtp, .xyz, .pcd, .prwm, .svg">
+  <input id="upload" hidden type="file" multiple
+    accept=".glb, .gltf, .fbx, .obj, .stl, .ply, .dae, .3ds, .3mf, .amf, .lwo, .md2, .kmz, .ifc, .vox, .vtk, .vtp, .xyz, .pcd, .prwm, .svg, .usdz">
   <input hidden type="file" id="photoInput" accept="image/*">
 
 </body>
