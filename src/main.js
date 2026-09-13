@@ -4333,7 +4333,7 @@ import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
         
         text = `let composer = new EffectComposer(renderer);
 let renderPass = new RenderPass(mainScene,mainCamera);
-mainComposer.addPass( renderPass );
+composer.addPass( renderPass );
 
 `
 
@@ -4346,7 +4346,7 @@ composer.addPass( ${effects[effect].name.toLowerCase().replaceAll(' ','_')} )
 `
         })
         text+= `let outputPass = new OutputPass();
-mainComposer.addPass( outputPass );
+composer.addPass( outputPass );
 `
       }
       sceneAddSection = ``
