@@ -3616,7 +3616,6 @@ const materialDefaultProperties = {
 
   }
   function handleExport(child) {    
-    console.log(child);
     if(child.type && Object.hasOwn(THREE,child.type) && !child.userData?.isLightHelper && !child?.isTransformControlsRoot){
         // if(child?.userData?.isFileImport && child.isGroup){
         //   handleImportedSceneExport(child)
@@ -4328,18 +4327,27 @@ let controls = new OrbitControls( camera, renderer.domElement );
 `
 changeIfNotDefaultTransformValues(mainCamera,'camera')
       if(mainComposer){
+        importSection += `import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+`;
         
-        text = `let composer = new EffectComposer(renderer)
-        `
+        text = `let composer = new EffectComposer(renderer);
+let renderPass = new RenderPass(mainScene,mainCamera);
+mainComposer.addPass( renderPass );
+
+`
 
         effectsNames.forEach((effect,i)=>{
           let constructorName = effects[effect].constructor;
-        importSection += `import { ${constructorName} } from 'three/addons/${getAddonType(constructorName)}/${constructorName}.js'\n`;
-        text +=`let ${effects[effect].name.toLowerCase().replaceAll(' ','_')} = new ${constructorName}( ${ i != 0 && i != (mainComposer.passes.length -1)? effects[effectsNames[i - 1]].stringParams : i == (mainComposer.passes.length -1) ? '': 'scene,camera'})
+        importSection += `import { ${constructorName} } from 'three/addons/${getAddonType(constructorName)}/${constructorName}.js';\n`;
+        text +=`let ${effects[effect].name.toLowerCase().replaceAll(' ','_')} = new ${constructorName}(${ i != 0 && i != (mainComposer.passes.length -1)? effects[effectsNames[i - 1]].stringParams : i == (mainComposer.passes.length -1) ? '': 'scene,camera'})
 composer.addPass( ${effects[effect].name.toLowerCase().replaceAll(' ','_')} )
 
 `
         })
+        text+= `let outputPass = new OutputPass();
+mainComposer.addPass( outputPass );
+`
       }
       sceneAddSection = ``
       animateSection = ``
