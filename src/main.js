@@ -1446,7 +1446,8 @@ const materialDefaultProperties = {
 
       bloom: {
           name: 'Bloom',
-          stringParams:`new THREE.Vector2(
+          constructor: 'UnrealBloomPass',
+          stringParams: `new THREE.Vector2(
                       renderer.domElement.width,
                       renderer.domElement.height
                   ),
@@ -1455,7 +1456,7 @@ const materialDefaultProperties = {
                   0.85`,
           create: (renderer, scene, camera) => {
               return new UnrealBloomPass(
-                new THREE.Vector2(
+                  new THREE.Vector2(
                       renderer.domElement.width,
                       renderer.domElement.height
                   ),
@@ -1468,6 +1469,7 @@ const materialDefaultProperties = {
 
       depthOfField: {
           name: 'Depth of Field',
+          constructor: 'BokehPass',
           stringParams: `scene, camera, {
                   focus: 4,
                   aperture: 0.0001,
@@ -1484,7 +1486,8 @@ const materialDefaultProperties = {
 
       motionBlur: {
           name: 'Motion Blur',
-          stringParams: `0.95`, 
+          constructor: 'AfterimagePass',
+          stringParams: `0.95`,
           create: () => {
               return new AfterimagePass(0.95);
           }
@@ -1492,6 +1495,7 @@ const materialDefaultProperties = {
 
       chromaticAberration: {
           name: 'Chromatic Aberration',
+          constructor: 'ShaderPass',
           stringParams: `RGBShiftShader`,
           create: () => {
               const pass = new ShaderPass(RGBShiftShader);
@@ -1503,6 +1507,7 @@ const materialDefaultProperties = {
 
       vignette: {
           name: 'Vignette',
+          constructor: 'ShaderPass',
           stringParams: ``,
           create: () => {
               const pass = new ShaderPass(VignetteShader);
@@ -1514,7 +1519,8 @@ const materialDefaultProperties = {
 
       filmGrain: {
           name: 'Film Grain',
-          stringParams:`1.0,false`,
+          constructor: 'FilmPass',
+          stringParams: `1.0,false`,
           create: () => {
               return new FilmPass(
                   1.0,
@@ -1525,6 +1531,7 @@ const materialDefaultProperties = {
 
       brightnessContrast: {
           name: 'Brightness / Contrast',
+          constructor: 'ShaderPass',
           stringParams: `BrightnessContrastShader`,
           create: () => {
               const pass = new ShaderPass(BrightnessContrastShader);
@@ -1536,21 +1543,22 @@ const materialDefaultProperties = {
 
       hueSaturation: {
           name: 'Hue / Saturation',
+          constructor: 'ShaderPass',
           stringParams: `HueSaturationShader`,
           create: () => {
               const pass = new ShaderPass(HueSaturationShader);
               pass.uniforms.saturation.value = 0.8;
               setInterval(() => {
-                pass.uniforms.hue.value = 2.0 * Math.random() - 1;
+                  pass.uniforms.hue.value = 2.0 * Math.random() - 1;
               }, 200);
               return pass;
-
           }
       },
 
       ssao: {
           name: 'SSAO',
-          stringParams:`scene,
+          constructor: 'SSAOPass',
+          stringParams: `scene,
                   camera,
                   renderer.domElement.width,
                   renderer.domElement.height`,
@@ -1572,7 +1580,8 @@ const materialDefaultProperties = {
 
       glitch: {
           name: 'Glitch',
-          stringParams:``,
+          constructor: 'GlitchPass',
+          stringParams: ``,
           create: () => {
               const pass = new GlitchPass();
               pass.goWild = false;
@@ -1582,7 +1591,8 @@ const materialDefaultProperties = {
 
       fxaa: {
           name: 'FXAA',
-          stringParams:``,
+          constructor: 'FXAAPass',
+          stringParams: ``,
           create: () => {
               return new FXAAPass();
           }
@@ -1590,7 +1600,8 @@ const materialDefaultProperties = {
 
       smaa: {
           name: 'SMAA',
-          stringParams:`renderer.domElement.width,
+          constructor: 'SMAAPass',
+          stringParams: `renderer.domElement.width,
   renderer.domElement.height`,
           create: (renderer) => {
               return new SMAAPass(
@@ -1602,17 +1613,18 @@ const materialDefaultProperties = {
 
       halftone: {
           name: 'Halftone',
-          stringParams:`{
-  shape: 1,
-  radius: 0.2,
-  rotateR: Math.PI / 12,
-  rotateG: Math.PI / 12,
-  rotateB: Math.PI / 12,
-  scatter: 1,
-  blending: 1,
-  blendingMode: 1,
-  greyscale: false,
-  disable: false
+          constructor: 'HalftonePass',
+          stringParams: `{
+      shape: 1,
+      radius: 0.2,
+      rotateR: Math.PI / 12,
+      rotateG: Math.PI / 12,
+      rotateB: Math.PI / 12,
+      scatter: 1,
+      blending: 1,
+      blendingMode: 1,
+      greyscale: false,
+      disable: false
               }`,
           create: () => {
               return new HalftonePass({
@@ -1632,7 +1644,8 @@ const materialDefaultProperties = {
 
       dotScreen: {
           name: 'Dot Screen',
-          stringParams:`DotScreenShader`,
+          constructor: 'ShaderPass',
+          stringParams: `DotScreenShader`,
           create: () => {
               const pass = new ShaderPass(DotScreenShader);
               pass.uniforms.scale.value = 1;
@@ -1643,7 +1656,8 @@ const materialDefaultProperties = {
 
       sepia: {
           name: 'Sepia',
-          stringParams:`SepiaShader`,
+          constructor: 'ShaderPass',
+          stringParams: `SepiaShader`,
           create: () => {
               const pass = new ShaderPass(SepiaShader);
               pass.uniforms.amount.value = 1;
@@ -1653,7 +1667,8 @@ const materialDefaultProperties = {
 
       colorify: {
           name: 'Colorify',
-          stringParams:`ColorifyShader`,
+          constructor: 'ShaderPass',
+          stringParams: `ColorifyShader`,
           create: () => {
               const pass = new ShaderPass(ColorifyShader);
               pass.uniforms.color.value.set(0xffffff);
@@ -1663,7 +1678,8 @@ const materialDefaultProperties = {
 
       technicolor: {
           name: 'Technicolor',
-          stringParams:`TechnicolorShader`,
+          constructor: 'ShaderPass',
+          stringParams: `TechnicolorShader`,
           create: () => {
               return new ShaderPass(TechnicolorShader);
           }
@@ -1671,7 +1687,8 @@ const materialDefaultProperties = {
 
       bleachBypass: {
           name: 'Bleach Bypass',
-          stringParams:`BleachBypassShader`,
+          constructor: 'ShaderPass',
+          stringParams: `BleachBypassShader`,
           create: () => {
               return new ShaderPass(BleachBypassShader);
           }
@@ -1679,7 +1696,8 @@ const materialDefaultProperties = {
 
       kaleido: {
           name: 'Kaleidoscope',
-          stringParams:`KaleidoShader`,
+          constructor: 'ShaderPass',
+          stringParams: `KaleidoShader`,
           create: () => {
               const pass = new ShaderPass(KaleidoShader);
               pass.uniforms.sides.value = 6;
@@ -2223,7 +2241,7 @@ const materialDefaultProperties = {
       let intersectedObject; 
       label.className = "ll";
       label.innerText = objects[i];
-      proto.className = "prototype";
+      proto.className = `prototype`;
       proto.dataset.TE = objects[i];
       protoContainer.dataset.TE = objects[i];
       protoContainer.className = "prototypeContainer";
@@ -2374,7 +2392,7 @@ const materialDefaultProperties = {
   }
 
   function optionDemo(mode){
-    const prototypes = document.querySelectorAll(".prototype");
+    const prototypes = document.querySelectorAll(`.prototype`);
     const previews = [];
 
     renderer.setSize(window.innerWidth,window.innerHeight);
@@ -2391,7 +2409,7 @@ const materialDefaultProperties = {
     renderer.domElement.style.height = "100vh";
     renderer.domElement.style.pointerEvents = "none";
     renderer.domElement.style.zIndex = "0";
-
+    
     for (let i = 0; i < prototypes.length; i++) {
       let mesh;
         const scene = new THREE.Scene();
@@ -3599,7 +3617,7 @@ const materialDefaultProperties = {
   }
   function handleExport(child) {    
     console.log(child);
-    if(child.type && Object.hasOwn(THREE,child.type) && !child.userData?.isLightHelper){
+    if(child.type && Object.hasOwn(THREE,child.type) && !child.userData?.isLightHelper && !child?.isTransformControlsRoot){
         // if(child?.userData?.isFileImport && child.isGroup){
         //   handleImportedSceneExport(child)
         //   return null
@@ -3700,7 +3718,7 @@ ${geoVarName}.setIndex(${bufferName})\n`
       }else{
         let geoParams = Object.values(child.geometry.parameters)
         geoVarName = generateName((child.geometry?.userData?.name ? child.geometry.userData.name : child.geometry.name ? child.geometry.name : child.geometry.type).replaceAll('.','_'))
-        codeSection += `let ${geoVarName} = new THREE.${child.geometry.constructor.name}(${geoParams ? geoParams.join(',') : ''})\n`
+        codeSection += `let ${geoVarName} = new THREE.${child.geometry.type}(${geoParams ? geoParams.join(',') : ''})\n`
       }
     }
     if(child?.material){
@@ -3708,7 +3726,7 @@ ${geoVarName}.setIndex(${bufferName})\n`
       matVarName = generateName((child.material?.userData?.name ? child.material.userData.name : child.material.name ? child.material.name : child.material.type).replaceAll('.','_'))
       codeSection += `let ${matVarName} = new THREE.${child.material.type}(${matParam ? matParam : ''})\n`
     }
-    codeSection += `let ${meshVarName} = new THREE.${child.constructor.name}(${child?.geometry ? geoVarName : ''},${child?.material ? matVarName : ''})\n`
+    codeSection += `let ${meshVarName} = new THREE.${child.type}(${child?.geometry ? geoVarName : ''},${child?.material ? matVarName : ''})\n`
     changeIfNotDefaultTransformValues(child,meshVarName)
     codeSection += '\n'
     sceneAddSection += `${group ?? 'scene'}.add(${meshVarName})\n` 
@@ -4313,11 +4331,12 @@ changeIfNotDefaultTransformValues(mainCamera,'camera')
         
         text = `let composer = new EffectComposer(renderer)
         `
-        mainComposer.passes.forEach((effect,i)=>{
-          console.log(effect);
-        importSection += `import { ${effect.constructor.name} } from 'three/addons/${getAddonType(effect.constructor.name)}/${effect.constructor.name}.js'\n`;
-        text +=`let ${effect.constructor.name.toLowerCase()} = new ${effect.constructor.name}( ${ i != 0 && i != (mainComposer.passes.length -1)? effects[effectsNames[i - 1]].stringParams : i == (mainComposer.passes.length -1) ? '': 'scene,camera'})
-composer.addPass( ${effect.constructor.name.toLowerCase()} )
+
+        effectsNames.forEach((effect,i)=>{
+          let constructorName = effects[effect].constructor;
+        importSection += `import { ${constructorName} } from 'three/addons/${getAddonType(constructorName)}/${constructorName}.js'\n`;
+        text +=`let ${effects[effect].name.toLowerCase().replaceAll(' ','_')} = new ${constructorName}( ${ i != 0 && i != (mainComposer.passes.length -1)? effects[effectsNames[i - 1]].stringParams : i == (mainComposer.passes.length -1) ? '': 'scene,camera'})
+composer.addPass( ${effects[effect].name.toLowerCase().replaceAll(' ','_')} )
 
 `
         })
