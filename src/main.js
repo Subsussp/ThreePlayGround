@@ -3597,8 +3597,9 @@ const materialDefaultProperties = {
     }
 
   }
-  function handleExport(child) {
-    if(child.constructor.name && Object.hasOwn(THREE,child.constructor.name)){
+  function handleExport(child) {    
+    console.log(child);
+    if(child.type && Object.hasOwn(THREE,child.type) && !child.userData?.isLightHelper){
         // if(child?.userData?.isFileImport && child.isGroup){
         //   handleImportedSceneExport(child)
         //   return null
@@ -3677,7 +3678,7 @@ sceneAddSection += `scene.add(${fileNameWithoutExtention}.scene)\n`
 // console.log(child.geometry);
 
       if(child.geometry.type == 'BufferGeometry'){
-        codeSection += `let ${geoVarName} = new THREE.${child.geometry.constructor.name}()\n`
+        codeSection += `let ${geoVarName} = new THREE.BufferGeometry()\n`
         for (let i = 0; i < Object.entries(child.geometry.attributes).length; i++) {
           const attribute = Object.entries(child.geometry.attributes)[i][0];
           const value = Object.entries(child.geometry.attributes)[i][1];
@@ -4296,10 +4297,10 @@ animate()`
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
 
-`;
+`;        
       codeSection = `\nlet scene = new THREE.Scene()
 let camera = new THREE.${mainCamera.type}(${[...mainCameraParam]})
-let renderer = new THREE.${mainRenderer.constructor.name}()
+let renderer = new THREE.${mainRenderer?.isWebGLRenderer ? 'WebGLRenderer' : mainRenderer?.isWebGPURenderer ? 'WebGPURenderer' : 'EDIT_THIS_AND_USE_ANY_RENDERER'  }()
 renderer.setSize(window.innerWidth,window.innerHeight)
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 document.body.appendChild(renderer.domElement)
@@ -4309,9 +4310,11 @@ let controls = new OrbitControls( camera, renderer.domElement );
 `
 changeIfNotDefaultTransformValues(mainCamera,'camera')
       if(mainComposer){
+        
         text = `let composer = new EffectComposer(renderer)
-`
+        `
         mainComposer.passes.forEach((effect,i)=>{
+          console.log(effect);
         importSection += `import { ${effect.constructor.name} } from 'three/addons/${getAddonType(effect.constructor.name)}/${effect.constructor.name}.js'\n`;
         text +=`let ${effect.constructor.name.toLowerCase()} = new ${effect.constructor.name}( ${ i != 0 && i != (mainComposer.passes.length -1)? effects[effectsNames[i - 1]].stringParams : i == (mainComposer.passes.length -1) ? '': 'scene,camera'})
 composer.addPass( ${effect.constructor.name.toLowerCase()} )
