@@ -4332,7 +4332,7 @@ import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 `;
         
         text = `let composer = new EffectComposer(renderer);
-let renderPass = new RenderPass(mainScene,mainCamera);
+let renderPass = new RenderPass(scene,camera);
 composer.addPass( renderPass );
 
 `
