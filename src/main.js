@@ -4320,6 +4320,7 @@ let camera = new THREE.${mainCamera.type}(${[...mainCameraParam]})
 let renderer = new THREE.${mainRenderer?.isWebGLRenderer ? 'WebGLRenderer' : mainRenderer?.isWebGPURenderer ? 'WebGPURenderer' : 'EDIT_THIS_AND_USE_ANY_RENDERER'  }()
 renderer.setSize(window.innerWidth,window.innerHeight)
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+document.body.style.margin = 0
 document.body.appendChild(renderer.domElement)
 
 let controls = new OrbitControls( camera, renderer.domElement );
