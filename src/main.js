@@ -1,7 +1,6 @@
 import * as THREE from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { DRACOLoader } from "three/addons/loaders/DRACOLoader.js";
-import { RectAreaLightHelper } from "three/addons/helpers/RectAreaLightHelper.js";
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { TransformControls } from "three/addons/controls/TransformControls.js";
 import MouseFollower from "mouse-follower";
@@ -13,7 +12,6 @@ import { PLYLoader } from 'three/addons/loaders/PLYLoader.js';
 import { STLLoader } from 'three/addons/loaders/STLLoader.js';
 import { SVGLoader } from 'three/addons/loaders/SVGLoader.js';
 import { OBJLoader } from 'three/addons/loaders/OBJLoader.js';
-import { GLTFExporter } from 'three/addons/exporters/GLTFExporter.js';
 import { STLExporter } from 'three/addons/exporters/STLExporter.js';
 import { PLYExporter } from 'three/addons/exporters/PLYExporter.js';
 import { OBJExporter } from 'three/addons/exporters/OBJExporter.js';
@@ -73,12 +71,6 @@ let settingFromLocalstorage = window.localStorage.getItem('setting')
 let SCENE_DEFAULT_BACKGROUND_COLOR = new THREE.Color('#333333')
 
 
-const exporters = {
-    gltf: new GLTFExporter(),
-    obj: new OBJExporter(),
-    stl: new STLExporter(),
-    ply: new PLYExporter(),
-};
 const fbxLoader = new FBXLoader();
 const stloader = new STLLoader();
 const objLoader = new OBJLoader();
@@ -89,7 +81,9 @@ const dracoLoader = new DRACOLoader();
 const colladaLoader = new ColladaLoader();
 const usdLoader = new USDLoader();
 
-dracoLoader.setDecoderPath('https://www.gstatic.com/draco/v1/decoders/'); 
+dracoLoader.setDecoderPath(
+  'https://www.gstatic.com/draco/versioned/decoders/1.5.7/'
+); 
 loader.setDRACOLoader(dracoLoader);
 window.addEventListener('DOMContentLoaded', () => {
   const request = indexedDB.open("threejs-editor", 1);
@@ -104,7 +98,6 @@ window.addEventListener('DOMContentLoaded', () => {
 
   };
 
-
   request.onsuccess = (event) => {
       db = event.target.result;
       let tx = db.transaction('states', 'readwrite');
@@ -115,10 +108,9 @@ window.addEventListener('DOMContentLoaded', () => {
           let laoder = new THREE.ObjectLoader()
           let kadf = laoder.parse(data.result)
           createEditor(kadf,false,data.result)
-
+        }else{
+          createEditor(new THREE.Group(), true);
         }
-
-        // save scene status and load it 
 
       };
   };
