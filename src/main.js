@@ -3768,9 +3768,9 @@ animate()`
   function checkIfDefaultScale(child) {
     return child.scale.x !== 1 || child.scale.y !== 1  || child.scale.z !== 1
   }
-  function layerFiltering(e){        
+  function layerFiltering(e){    
+    console.log(e) 
       if(!e?.isCamera && !e?.userData.isLightHelper && !e?.controls && !e?.type.includes("Grid") && !e?.type.includes("Axes") && e?.name !== 'TransformControlsHelper' && !e?.isTransformControlsRoot && !e?.userData.skip ){ 
-        
         if(!layerObjects.includes(e.uuid)){
           layerObjects.push(e.uuid)
           let classy = ''
@@ -3784,10 +3784,15 @@ animate()`
             let groupName = fileName
             e.userData.name = fileName ?? e.userData.name 
             appendLayer(e ,layerContainer,'type ',false)
-
-            e.children.forEach((f)=>{              
-              layerFiltering(f)
-            })
+            if(e.userData?.isFileImport){
+              e.traverse((f)=>{              
+                layerFiltering(f)
+              })
+            }else{  
+              e.children.forEach((f)=>{              
+                layerFiltering(f)
+              })
+            }
             return null;
           }              
           appendLayer(e ,layerContainer,'type '+ classy,true)
@@ -4291,6 +4296,7 @@ animate()`
     
     function updateLayers(e){
       handleTranformControlsAndBoxHelper(chosenLayer)
+
       layerFiltering(e.child)
       saveSceneState()
 
