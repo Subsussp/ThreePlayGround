@@ -2972,6 +2972,7 @@ const materialDefaultProperties = {
   function createObjectPanel(object,panelContainer){
     let panel = document.createElement('div')
     panel.id = 'objectPanel'  
+
     // name & uuid 
     let row = createRow('name')
     let keyElement = createKeyElement('name')
@@ -3091,7 +3092,25 @@ const materialDefaultProperties = {
         }
       })
     }
+    
+    // Size display
+    let sizeRow = createRow('Size')
+    let sizeKey = createKeyElement('Size')
+    let divForAttributes = document.createElement('div')
+    let box3 = new THREE.Box3().setFromObject(object)
+    let sizeVec = new THREE.Vector3()
+    box3.getSize(sizeVec)
 
+    let spanForDisplay = createInfoDisplaySpan('width',sizeVec.x)
+    let spanForDisplay1 = createInfoDisplaySpan('height',sizeVec.y)
+    let spanForDisplay2 = createInfoDisplaySpan('length',sizeVec.z)
+    
+    divForAttributes.style.display = 'flex'
+    divForAttributes.style.flexDirection = 'column'
+    divForAttributes.style.gap = '6px'
+    divForAttributes.append(spanForDisplay,spanForDisplay1,spanForDisplay2)
+    sizeRow.append(sizeKey,divForAttributes)
+    panel.append(sizeRow)
     panelContainer.appendChild(panel)
   }
 
