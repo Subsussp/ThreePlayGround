@@ -125,7 +125,8 @@ async function createEditor(mainscene,initialization,rawObject){
   let sceneSettings = document.getElementById('sceneSettings');
   const Grid = document.querySelector("#G")
   const Axes = document.querySelector("#Ax")
-  let layerContainer = document.getElementById('layersControl');
+  let layerControl = document.getElementById('layersControl');
+  let layerContainer = document.getElementById('layersContainer');
   layerContainer.innerHTML = ''
   let upload = document.getElementById('upload')
   const Photo = document.getElementById('photoInput'); 
@@ -3773,11 +3774,16 @@ animate()`
       if(!e?.isCamera && !e?.userData.isLightHelper && !e?.controls && !e?.type.includes("Grid") && !e?.type.includes("Axes") && e?.name !== 'TransformControlsHelper' && !e?.isTransformControlsRoot && !e?.userData.skip ){ 
         if(!layerObjects.includes(e.uuid)){
           if(e?.children.length >= 1){
-            appendLayer(e ,parent,'type ',false)
+            if(e?.isGroup){
+              e.userData.name = fileName ?? e.userData.name 
+            }
             let subContainer= document.createElement('div')
+            appendLayer(e ,parent,'type ',false)
             subContainer.style.marginLeft = "22px"
             e?.children.forEach((f)=>{
-              layerFiltering(f,subContainer)
+              let subSubContainer= document.createElement('div')
+              layerFiltering(f,subSubContainer)
+              subContainer.appendChild(subSubContainer)
             })
             parent.appendChild(subContainer)
           }else{
@@ -3788,23 +3794,14 @@ animate()`
             }
             if(e?.isMesh){
               classy += "mesh"
-            }
-            if(e?.isGroup){
-              let groupName = fileName
-              e.userData.name = fileName ?? e.userData.name 
-              let parentElement = appendLayer(e ,layerContainer,'type ',false)
-              e.children.forEach((f)=>{              
-                layerFiltering(f,parentElement)
-              })
-              return null;
-            }             
+            }           
             appendLayer(e ,parent ,'type '+ classy,true)
           }
         }
       }
   }
 
-  function appendLayer(object,parent,markC,opener){
+  function appendLayer(object,parent,markC,opener,fixed){
     let layer = document.createElement('div')
     layer.className = "layer"
     layer.setAttribute('data-uuid',object.uuid)
@@ -3827,7 +3824,7 @@ animate()`
       }
       mainInit('main')
     })
-    parent.appendChild(layer)
+    fixed ? parent.prepend(layer) : parent.appendChild(layer)
     return parent
   }
 
@@ -4259,18 +4256,21 @@ animate()`
     })
 
     window.addEventListener('keydown',(e)=>{
+      console.log(chosenLayer)
+
       if(e.code == "Backspace"){
         if(chosenLayer && chosenLayer.uuid !== mainScene.uuid && chosenLayer.uuid !== mainCamera.uuid ){
           TC.detach()
           hideTransformAndSelectionBox()
-          layerContainer.querySelector(`[data-uuid="${chosenLayer.uuid}"]`) && layerContainer.querySelector(`[data-uuid="${chosenLayer.uuid}"]`).remove()
+          let chosenHtmlLayer = layerContainer.querySelector(`[data-uuid="${chosenLayer.uuid}"]`)
+          chosenHtmlLayer && chosenHtmlLayer.parentElement != layerContainer ? chosenHtmlLayer.parentElement.remove() : chosenHtmlLayer.parentElement.replaceChildren()
           if(chosenLayer?.isLight){
             chosenLayer.userData?.object && (mainScene.getObjectByProperty('uuid', chosenLayer.userData.object)).removeFromParent()
             if(chosenLayer.target){
               layerContainer.querySelector(`[data-uuid="${chosenLayer.target}"]`).remove()
               (mainScene.getObjectByProperty('uuid', chosenLayer.target)).removeFromParent()
             }
-          } 
+          }
 
           chosenLayer.removeFromParent() 
           chosenLayer = null
@@ -4292,8 +4292,8 @@ animate()`
 
     mainScene.addEventListener("childadded",updateLayers)
 
-    appendLayer(mainCamera,layerContainer,'type camera',false,)
-    appendLayer(mainScene,layerContainer,'type scene',false,)
+    appendLayer(mainScene,layerControl,'type scene',false,true)
+    appendLayer(mainCamera,layerControl,'type camera',false,true)
     function updateLayers(e){
       handleTranformControlsAndBoxHelper(chosenLayer)
       layerFiltering(e.child)
@@ -4622,6 +4622,7 @@ composer.addPass( outputPass );
     document.getElementById('panelContainer') && document.getElementById('panelContainer').remove()
     hideTransformAndSelectionBox()  
       if(TC)TC.detach();
+      mainsc
       ([...mainScene.children]).forEach((child)=>{
         if(child?.isGroup){
           [...child.children].forEach((groupChild)=>{
