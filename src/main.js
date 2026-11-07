@@ -3768,34 +3768,36 @@ animate()`
   function checkIfDefaultScale(child) {
     return child.scale.x !== 1 || child.scale.y !== 1  || child.scale.z !== 1
   }
-  function layerFiltering(e){    
-    console.log(e) 
+  function layerFiltering(e,parent = layerContainer){    
+    
       if(!e?.isCamera && !e?.userData.isLightHelper && !e?.controls && !e?.type.includes("Grid") && !e?.type.includes("Axes") && e?.name !== 'TransformControlsHelper' && !e?.isTransformControlsRoot && !e?.userData.skip ){ 
         if(!layerObjects.includes(e.uuid)){
-          layerObjects.push(e.uuid)
-          let classy = ''
-          if(e?.isLight){
-            classy += "light"
-          }
-          if(e?.isMesh){
-            classy += "mesh"
-          }
-          if(e?.isGroup){
-            let groupName = fileName
-            e.userData.name = fileName ?? e.userData.name 
-            appendLayer(e ,layerContainer,'type ',false)
-            if(e.userData?.isFileImport){
-              e.traverse((f)=>{              
-                layerFiltering(f)
-              })
-            }else{  
-              e.children.forEach((f)=>{              
-                layerFiltering(f)
-              })
+          if(e?.children.length >= 1){
+            let subparent = appendLayer(e ,parent,'type ',true)
+            e?.children.forEach((f)=>{
+              layerFiltering(f,subparent)
+            })
+            parent.appendChild(subparent)
+          }else{
+            layerObjects.push(e.uuid)
+            let classy = ''
+            if(e?.isLight){
+              classy += "light"
             }
-            return null;
-          }              
-          appendLayer(e ,layerContainer,'type '+ classy,true)
+            if(e?.isMesh){
+              classy += "mesh"
+            }
+            if(e?.isGroup){
+              let groupName = fileName
+              e.userData.name = fileName ?? e.userData.name 
+              let parentElement = appendLayer(e ,layerContainer,'type ',false)
+              e.children.forEach((f)=>{              
+                layerFiltering(f,parentElement)
+              })
+              return null;
+            }             
+            appendLayer(e ,parent ,'type '+ classy,true)
+          }
         }
       }
   }
@@ -3824,6 +3826,7 @@ animate()`
       mainInit('main')
     })
     parent.appendChild(layer)
+    return parent
   }
 
   function updateInfo(){
@@ -4254,7 +4257,7 @@ animate()`
     })
 
     window.addEventListener('keydown',(e)=>{
-      if(e.keyCode == 8){
+      if(e.code == "Backspace"){
         if(chosenLayer && chosenLayer.uuid !== mainScene.uuid && chosenLayer.uuid !== mainCamera.uuid ){
           TC.detach()
           hideTransformAndSelectionBox()
@@ -4266,11 +4269,7 @@ animate()`
               (mainScene.getObjectByProperty('uuid', chosenLayer.target)).removeFromParent()
             }
           } 
-          if(chosenLayer?.isGroup){
-            chosenLayer.children.forEach((child)=>{
-              layerContainer.querySelector(`[data-uuid="${child.uuid}"]`).remove()
-            })  
-          }
+
           chosenLayer.removeFromParent() 
           chosenLayer = null
           mainInit()
@@ -4293,10 +4292,8 @@ animate()`
 
     appendLayer(mainCamera,layerContainer,'type camera',false,)
     appendLayer(mainScene,layerContainer,'type scene',false,)
-    
     function updateLayers(e){
       handleTranformControlsAndBoxHelper(chosenLayer)
-
       layerFiltering(e.child)
       saveSceneState()
 
@@ -4663,7 +4660,7 @@ composer.addPass( outputPass );
     const store = tx.objectStore("states");     
     const putRequest = store.put(pasr,0);
 }
-  }
+}
 
 function saveBuffer(data,downloadFileName){
     const blob = new Blob([data], {
