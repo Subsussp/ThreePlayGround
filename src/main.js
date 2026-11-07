@@ -3773,11 +3773,13 @@ animate()`
       if(!e?.isCamera && !e?.userData.isLightHelper && !e?.controls && !e?.type.includes("Grid") && !e?.type.includes("Axes") && e?.name !== 'TransformControlsHelper' && !e?.isTransformControlsRoot && !e?.userData.skip ){ 
         if(!layerObjects.includes(e.uuid)){
           if(e?.children.length >= 1){
-            let subparent = appendLayer(e ,parent,'type ',true)
+            appendLayer(e ,parent,'type ',false)
+            let subContainer= document.createElement('div')
+            subContainer.style.marginLeft = "22px"
             e?.children.forEach((f)=>{
-              layerFiltering(f,subparent)
+              layerFiltering(f,subContainer)
             })
-            parent.appendChild(subparent)
+            parent.appendChild(subContainer)
           }else{
             layerObjects.push(e.uuid)
             let classy = ''
