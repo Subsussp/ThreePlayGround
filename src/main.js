@@ -4619,25 +4619,21 @@ composer.addPass( outputPass );
     mainComposer = null
     effectsNames = []
     chosenLayer = null
+    let childrenToRemove = []
     document.getElementById('panelContainer') && document.getElementById('panelContainer').remove()
     hideTransformAndSelectionBox()  
-      if(TC)TC.detach();
-      mainsc
-      ([...mainScene.children]).forEach((child)=>{
-        if(child?.isGroup){
-          [...child.children].forEach((groupChild)=>{
-            let layer = layerContainer.querySelector(`[data-uuid="${groupChild.uuid}"]`)
-            if(layer)layer.remove()
-            groupChild.removeFromParent()        
-          }
-          )
-        }
-        if(!child?.isTransformControlsRoot){
-          let layer = layerContainer.querySelector(`[data-uuid="${child.uuid}"]`)
-          if(layer)layer.remove()
-          child.removeFromParent()
-        }
-      })
+    if(TC)TC.detach();
+    mainScene.traverse((child)=>{
+      if(child == mainScene || child?.isTransformControlsRoot) return
+      let layer = layerContainer.querySelector(`[data-uuid="${child.uuid}"]`)
+      if(layer)layer.remove()
+      childrenToRemove.push(child)
+    })
+    for (const childToRemove of childrenToRemove){
+      childToRemove.removeFromParent()
+    }
+    
+  
   }
   function autoSaveUnlessChanged() {
     if(timeOutHandle){
