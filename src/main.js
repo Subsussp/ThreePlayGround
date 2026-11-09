@@ -3010,7 +3010,7 @@ const materialDefaultProperties = {
     // position
     createRowWith3args(object,[object.position.x,object.position.y,object.position.z],panel,'position',.020)
 
-    if(object.type == 'Mesh'){  
+    if(object.type == 'Mesh' || object.type == 'Group' ){  
       Object.keys(object).forEach((key)=>{    
         if(key == 'rotation'){
           createRowWith3args(object,[object.rotation.x,object.rotation.y,object.rotation.z],panel,key,1)
@@ -3789,15 +3789,14 @@ animate()`
     return child.scale.x !== 1 || child.scale.y !== 1  || child.scale.z !== 1
   }
   function layerFiltering(e,parent = layerContainer){    
-    
       if(!e?.isCamera && !e?.userData.isLightHelper && !e?.controls && !e?.type.includes("Grid") && !e?.type.includes("Axes") && e?.name !== 'TransformControlsHelper' && !e?.isTransformControlsRoot && !e?.userData.skip ){ 
         if(!layerObjects.includes(e.uuid)){
           if(e?.children.length >= 1){
             if(e?.isGroup){
-              e.userData.name = fileName ?? e.userData.name 
+              e.userData.name = e?.userData.isFileImport ? fileName ?? e.userData.name : e.name
             }
             let subContainer= document.createElement('div')
-            appendLayer(e ,parent,'type ',false)
+            appendLayer(e ,parent,'type ',e?.isGroup && !e?.userData.isFileImport)
             subContainer.style.marginLeft = "22px"
             e?.children.forEach((f)=>{
               let subSubContainer= document.createElement('div')
