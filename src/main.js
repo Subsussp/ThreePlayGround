@@ -3010,7 +3010,7 @@ const materialDefaultProperties = {
     // position
     createRowWith3args(object,[object.position.x,object.position.y,object.position.z],panel,'position',.020)
 
-    if(object.type == 'Mesh' || object.type == 'Group' ){  
+    if(object?.type == 'Mesh' || object?.type == 'Group' || object?.type == 'Object3D'){  
       Object.keys(object).forEach((key)=>{    
         if(key == 'rotation'){
           createRowWith3args(object,[object.rotation.x,object.rotation.y,object.rotation.z],panel,key,1)
